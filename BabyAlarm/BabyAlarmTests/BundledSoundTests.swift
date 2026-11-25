@@ -68,8 +68,18 @@ final class BundledSoundTests: XCTestCase {
         a.hour = 6
         engine.save(a)
         XCTAssertTrue(engine.alarms.contains { $0.id == a.id })
+        engine.applyVoiceToAllAlarms("cry_hungry")
+        XCTAssertTrue(engine.alarms.allSatisfy { $0.voiceID == "cry_hungry" })
         engine.delete(id: a.id)
         XCTAssertFalse(engine.alarms.contains { $0.id == a.id })
+        XCTAssertNotNil(BabyVoiceCatalog.voice(id: engine.defaultVoiceID))
+        engine.defaultVoiceID = BabyVoiceCatalog.randomID
+        XCTAssertEqual(engine.defaultVoiceID, BabyVoiceCatalog.randomID)
+    }
+
+    func testAppInfoPlistDeclaresBackgroundAudio() {
+        let modes = Bundle(for: AlarmEngine.self).object(forInfoDictionaryKey: "UIBackgroundModes") as? [String]
+        XCTAssertEqual(modes, ["audio"])
     }
 }
 #endif

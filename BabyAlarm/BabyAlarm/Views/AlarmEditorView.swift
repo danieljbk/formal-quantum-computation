@@ -273,7 +273,7 @@ struct VoicePickerView: View {
 struct QuickAlarmView: View {
     @EnvironmentObject private var engine: AlarmEngine
     @Environment(\.dismiss) private var dismiss
-    @State private var voiceID = BabyVoiceCatalog.defaultVoice.id
+    @State private var voiceID = AlarmEngine.shared.defaultVoiceID
 
     private let options = [1, 5, 10, 15, 20, 30, 45, 60, 90]
 

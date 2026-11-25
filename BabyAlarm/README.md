@@ -19,6 +19,7 @@ None of their names, art or sounds are used.
 | Sound | Volume, fade-in over 15–120 s, vibration. The sound is quieter while you're solving a mission. |
 | Wake-up check | After you dismiss, it asks "Are you awake?" at a delay you choose. If you don't confirm within 100 s, the baby cries again. |
 | Background ringing | Optional silent audio stream that keeps the app alive so the crying plays at full length. Each ring is also backed by a burst of notifications spaced 30 s apart, so it still sounds if the app is suspended. |
+| Tabs | Alarms; Babies (listen to every voice, set the default for new alarms, or switch every alarm to one baby); Settings (background ringing, notification status, sound credits). |
 | Next-alarm header | A countdown on the main screen ("Rings in 7 h 12 min"). |
 
 ## Sound provenance

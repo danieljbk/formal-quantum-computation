@@ -22,7 +22,13 @@ final class AlarmEngine: ObservableObject {
         }
     }
 
+    /// Voice pre-selected for new alarms and quick alarms.
+    @Published var defaultVoiceID: String {
+        didSet { defaults.set(defaultVoiceID, forKey: Self.defaultVoiceKey) }
+    }
+
     private static let keepAliveKey = "babyalarm.keepAlive"
+    private static let defaultVoiceKey = "babyalarm.defaultVoice"
     private let defaults: UserDefaults
     private let repository: AlarmRepository
     private let live: Bool
@@ -39,6 +45,9 @@ final class AlarmEngine: ObservableObject {
         state.lastTick = now
         core = AlarmEngineCore(state: state)
         keepAliveEnabled = defaults.object(forKey: Self.keepAliveKey) as? Bool ?? true
+        let storedVoice = defaults.string(forKey: Self.defaultVoiceKey) ?? BabyVoiceCatalog.defaultVoice.id
+        defaultVoiceID = (storedVoice == BabyVoiceCatalog.randomID || BabyVoiceCatalog.voice(id: storedVoice) != nil)
+            ? storedVoice : BabyVoiceCatalog.defaultVoice.id
     }
 
     var alarms: [Alarm] { core.alarms }
@@ -93,6 +102,16 @@ final class AlarmEngine: ObservableObject {
     func save(_ alarm: Alarm) { mutate { $0.upsert(alarm) } }
     func delete(id: UUID) { mutate { $0.delete(id: id) } }
     func setEnabled(_ enabled: Bool, id: UUID) { mutate { $0.setEnabled(enabled, id: id) } }
+
+    /// Switches every alarm to one baby voice.
+    func applyVoiceToAllAlarms(_ voiceID: String) {
+        mutate { core in
+            for var alarm in core.alarms {
+                alarm.voiceID = voiceID
+                core.upsert(alarm)
+            }
+        }
+    }
 
     @discardableResult
     func addQuickAlarm(minutes: Int, voiceID: String) -> Alarm? {

@@ -24,17 +24,6 @@ struct ContentView: View {
     @EnvironmentObject private var engine: AlarmEngine
     @State private var editor: EditorTarget?
     @State private var showQuick = false
-    @State private var showSettings = false
-
-    private var interruption: Binding<Interruption?> {
-        Binding(
-            get: {
-                if let r = engine.ringing { return .ringing(r) }
-                if let w = engine.wakeCheck { return .wakeCheck(w) }
-                return nil
-            },
-            set: { _ in })
-    }
 
     var body: some View {
         NavigationStack {
@@ -75,15 +64,12 @@ struct ContentView: View {
             }
             .navigationTitle("Baby Alarm")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button { showSettings = true } label: { Image(systemName: "gearshape") }
-                        .accessibilityLabel("Settings")
-                }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button { showQuick = true } label: { Image(systemName: "bolt.fill") }
                         .accessibilityLabel("Quick alarm")
                     Button {
                         var fresh = Alarm()
+                        fresh.voiceID = engine.defaultVoiceID
                         let c = Calendar.current.dateComponents([.hour, .minute], from: Date().addingTimeInterval(8 * 3600))
                         fresh.hour = c.hour ?? 7
                         fresh.minute = c.minute ?? 0
@@ -101,10 +87,33 @@ struct ContentView: View {
                     .environmentObject(engine)
                     .presentationDetents([.medium, .large])
             }
-            .sheet(isPresented: $showSettings) {
-                SettingsView()
-                    .environmentObject(engine)
-            }
+        }
+    }
+}
+
+/// App root: tabs for alarms, baby voices and settings, with ringing and
+/// wake-up checks presented full screen above every tab.
+struct RootView: View {
+    @EnvironmentObject private var engine: AlarmEngine
+
+    private var interruption: Binding<Interruption?> {
+        Binding(
+            get: {
+                if let r = engine.ringing { return .ringing(r) }
+                if let w = engine.wakeCheck { return .wakeCheck(w) }
+                return nil
+            },
+            set: { _ in })
+    }
+
+    var body: some View {
+        TabView {
+            ContentView()
+                .tabItem { Label("Alarms", systemImage: "alarm.fill") }
+            VoiceGalleryView()
+                .tabItem { Label("Babies", systemImage: "waveform") }
+            SettingsView()
+                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
         }
         .tint(Theme.lilac)
         .fullScreenCover(item: interruption) { item in

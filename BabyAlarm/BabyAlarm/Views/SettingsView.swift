@@ -4,7 +4,6 @@ import UserNotifications
 
 struct SettingsView: View {
     @EnvironmentObject private var engine: AlarmEngine
-    @Environment(\.dismiss) private var dismiss
     private let manifest = SoundManifest.load(from: .main)
 
     private var notificationText: String {
@@ -58,12 +57,6 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
-            }
         }
     }
 }
