@@ -8,6 +8,14 @@ for a full-screen, app-like feel.
 
 ## Features
 
+Four tabs along the bottom:
+
+- **Alarms**: the clock, the next-cry countdown, and your alarm list.
+- **Nap**: one-tap quick naps (5–90 min), running naps with cancel, and Bedside mode.
+- **Babies**: listen to every baby, pick the default, and see each recording's credits and license.
+- **Settings**: 24-hour clock, defaults for new alarms (mission, snooze length),
+  background notifications, delete all.
+
 - **Alarms**: any time, one-off or repeating on chosen days (presets for weekdays,
   weekends and every day), with labels and on/off switches.
 - **A morning alarm out of the box**: first launch creates "Good morning", 7:00 on weekdays.
@@ -19,7 +27,7 @@ for a full-screen, app-like feel.
 - **Snooze** with a configurable interval and limit, shown as "3 left".
 - **Gradual volume** (fade in over 15/30/60 s) using Web Audio, so it also works on
   iOS, where `<audio>.volume` is read-only. Optional vibration.
-- **Quick nap alarms** (+5/10/20/30 min), **skip next** for repeating alarms, and a
+- **Quick nap alarms**, **skip next** for repeating alarms, and a
   "next cry in 7 h 12 min" countdown.
 - **Bedside mode**: keeps the screen awake (Screen Wake Lock) for an overnight alarm.
 - **Test this alarm now** from the editor.
@@ -61,6 +69,10 @@ npm test           # vitest: scheduling, snooze, missions, storage, provenance, 
 npm run build      # type-check + production bundle in dist/
 ```
 
+`dist/index.html` also works when opened straight from disk (`file://`). The build
+emits a classic deferred script with CSS bundled in, and the player falls back from
+Web Audio (which needs `fetch`) to `<audio>` there.
+
 ## Layout
 
 ```
@@ -71,9 +83,10 @@ src/
   missions.ts       math, typing and rock missions (seeded, testable)
   sounds.ts         baby voice catalog, built from the provenance log
   audio.ts          Web Audio player with fade-in and <audio> fallback
-  storage.ts        localStorage persistence + validation, first-run morning alarm
+  storage.ts        localStorage persistence + validation, settings, first-run morning alarm
   App.tsx           scheduler loop and screens
-  components/       AlarmCard, AlarmEditor, VoicePicker, RingingScreen, MissionPanel, Credits
+  components/       TabBar, AlarmsView, NapView, BabiesView, SettingsView, AlarmCard,
+                    AlarmEditor, VoicePicker, RingingScreen, MissionPanel, Credits, Toggle
 tests/              vitest suites
 public/sounds/      the four recordings
 scripts/fetch-sounds.sh

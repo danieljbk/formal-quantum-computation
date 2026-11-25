@@ -4,7 +4,7 @@ import { App } from "../src/App";
 import { BabyPlayer, rampVolume, RAMP_FLOOR } from "../src/audio";
 import { MissionPanel } from "../src/components/MissionPanel";
 import { makeMathProblem, makeRng } from "../src/missions";
-import { defaultAlarm, serialize, STORAGE_KEY } from "../src/storage";
+import { DEFAULT_SETTINGS, defaultAlarm, serialize, STORAGE_KEY } from "../src/storage";
 import type { SoundId } from "../src/types";
 
 class FakePlayer extends BabyPlayer {
@@ -77,7 +77,7 @@ describe("App", () => {
     let t = WED_659;
     const player = new FakePlayer();
     const alarm = defaultAlarm({ id: "m", hour: 7, minute: 0, label: "Wake up", voice: "fussy", mission: { kind: "none" } });
-    localStorage.setItem(STORAGE_KEY, serialize({ alarms: [alarm], snoozes: [], seeded: true }));
+    localStorage.setItem(STORAGE_KEY, serialize({ alarms: [alarm], snoozes: [], seeded: true, settings: DEFAULT_SETTINGS }));
     render(<App player={player} clockNow={() => t} />);
     expect(screen.queryByRole("alertdialog")).toBeNull();
 
@@ -102,7 +102,7 @@ describe("App", () => {
     let t = WED_659;
     const player = new FakePlayer();
     const alarm = defaultAlarm({ id: "m", hour: 7, minute: 0, voice: "newborn", repeat: [3] });
-    localStorage.setItem(STORAGE_KEY, serialize({ alarms: [alarm], snoozes: [], seeded: true }));
+    localStorage.setItem(STORAGE_KEY, serialize({ alarms: [alarm], snoozes: [], seeded: true, settings: DEFAULT_SETTINGS }));
     render(<App player={player} clockNow={() => t} />);
 
     t = WED_659 + 61_000;
@@ -157,5 +157,62 @@ describe("volume ramp", () => {
     expect(rampVolume(15, 30, 1)).toBeCloseTo(RAMP_FLOOR + (1 - RAMP_FLOOR) / 2);
     expect(rampVolume(30, 30, 0.8)).toBe(0.8);
     expect(rampVolume(0, 0, 0.6)).toBe(0.6);
+  });
+});
+
+describe("tab bar", () => {
+  it("has four tabs and switches between them", () => {
+    render(<App player={new FakePlayer()} clockNow={() => WED_659} />);
+    const tabs = screen.getAllByRole("tab");
+    expect(tabs.map((t) => t.textContent)).toEqual(["⏰Alarms", "🌙Nap", "👶Babies", "⚙️Settings"]);
+    expect(tabs[0].getAttribute("aria-selected")).toBe("true");
+
+    fireEvent.click(screen.getByRole("tab", { name: /Babies/ }));
+    expect(screen.getByRole("region", { name: "Babies" })).toBeTruthy();
+    expect(screen.getByText("Credits & licenses")).toBeTruthy();
+    expect(screen.queryByLabelText("Add alarm")).toBeNull();
+
+    fireEvent.click(screen.getByRole("tab", { name: /Settings/ }));
+    expect(screen.getByRole("region", { name: "Settings" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: /Alarms/ }));
+    expect(screen.getByLabelText("Add alarm")).toBeTruthy();
+  });
+
+  it("Nap tab sets a quick alarm that rings when the nap is over", async () => {
+    vi.useFakeTimers();
+    let t = WED_659;
+    const player = new FakePlayer();
+    localStorage.setItem(STORAGE_KEY, serialize({ alarms: [], snoozes: [], seeded: true, settings: { ...DEFAULT_SETTINGS, defaultVoice: "hungry" } }));
+    render(<App player={player} clockNow={() => t} />);
+    fireEvent.click(screen.getByRole("tab", { name: /Nap/ }));
+    expect(screen.getByText("No nap running.")).toBeTruthy();
+    await act(async () => void fireEvent.click(screen.getByText("20").closest("button")!));
+    expect(screen.getByRole("region", { name: "Nap" }).textContent).toMatch(/in 20 min · Hungry build-up/);
+
+    t += 20 * 60_000 + 1000;
+    await act(async () => void vi.advanceTimersByTime(1000));
+    expect(screen.getByRole("alertdialog")).toBeTruthy();
+    expect(player.plays).toEqual(["hungry"]);
+  });
+
+  it("Settings switches to a 24-hour clock", () => {
+    render(<App player={new FakePlayer()} clockNow={() => new Date(2026, 10, 25, 19, 5).getTime()} />);
+    expect(screen.getByLabelText("Current time").textContent).toBe("7:05PM");
+    fireEvent.click(screen.getByRole("tab", { name: /Settings/ }));
+    fireEvent.click(screen.getByRole("switch", { name: "24-hour clock" }));
+    fireEvent.click(screen.getByRole("tab", { name: /Alarms/ }));
+    expect(screen.getByLabelText("Current time").textContent).toBe("19:05");
+    expect(screen.getByRole("article", { name: /Alarm 07:00, Good morning/ })).toBeTruthy();
+  });
+
+  it("Babies tab sets the default baby for new alarms", () => {
+    render(<App player={new FakePlayer()} clockNow={() => WED_659} />);
+    fireEvent.click(screen.getByRole("tab", { name: /Babies/ }));
+    fireEvent.click(screen.getByText("Kunjappi"));
+    fireEvent.click(screen.getByRole("tab", { name: /Alarms/ }));
+    fireEvent.click(screen.getByLabelText("Add alarm"));
+    const selected = screen.getAllByRole("radio").find((r) => r.classList.contains("voice") && r.getAttribute("aria-checked") === "true");
+    expect(selected?.textContent).toContain("Kunjappi");
   });
 });

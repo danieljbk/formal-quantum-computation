@@ -9,15 +9,16 @@ interface Props {
   alarm: Alarm;
   now: number;
   snoozesLeft: number;
+  use24h: boolean;
   onSnooze: () => void;
   onDismiss: () => void;
 }
 
-export function RingingScreen({ ringing, alarm, now, snoozesLeft, onSnooze, onDismiss }: Props) {
+export function RingingScreen({ ringing, alarm, now, snoozesLeft, use24h, onSnooze, onDismiss }: Props) {
   const [inMission, setInMission] = useState(false);
   const voice = voiceById(ringing.soundId);
   const d = new Date(now);
-  const clock = formatClock(d.getHours(), d.getMinutes());
+  const clock = formatClock(d.getHours(), d.getMinutes(), use24h);
   const done = useCallback(() => onDismiss(), [onDismiss]);
 
   const stop = () => {
@@ -31,7 +32,7 @@ export function RingingScreen({ ringing, alarm, now, snoozesLeft, onSnooze, onDi
         <div className="ring-label">{alarm.label || "Alarm"}</div>
         <div className="ring-clock">
           {clock.time}
-          <span className="meridiem">{clock.meridiem}</span>
+          {clock.meridiem && <span className="meridiem">{clock.meridiem}</span>}
         </div>
       </div>
 

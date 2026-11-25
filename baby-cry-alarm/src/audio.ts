@@ -34,7 +34,16 @@ export class BabyPlayer {
 
   constructor(private readonly baseUrl: string = "./") {}
 
+  /**
+   * Web Audio needs fetch(), which browsers block for pages opened from disk
+   * (file://). There, play through <audio>, which can load local files.
+   */
+  private get webAudioUsable(): boolean {
+    return typeof location === "undefined" || location.protocol !== "file:";
+  }
+
   private context(): Ctx | null {
+    if (!this.webAudioUsable) return null;
     if (this.ctx) return this.ctx;
     const AC: typeof AudioContext | undefined =
       typeof window !== "undefined"

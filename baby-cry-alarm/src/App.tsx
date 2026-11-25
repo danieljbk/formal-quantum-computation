@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BabyPlayer } from "./audio";
-import { AlarmCard } from "./components/AlarmCard";
 import { AlarmEditor } from "./components/AlarmEditor";
-import { Credits } from "./components/Credits";
+import { AlarmsView } from "./components/AlarmsView";
+import { BabiesView } from "./components/BabiesView";
+import { NapView } from "./components/NapView";
 import { RingingScreen } from "./components/RingingScreen";
+import { SettingsView, type NotifyState } from "./components/SettingsView";
+import { TabBar, type Tab } from "./components/TabBar";
 import {
   dismiss,
   removeAlarm,
@@ -17,10 +20,13 @@ import {
 } from "./engine";
 import { formatClock, formatCountdown, nextOccurrence, nextRing } from "./schedule";
 import { resolveVoice } from "./sounds";
-import { defaultAlarm, load, save } from "./storage";
+import { alarmFromSettings, load, save, type Settings } from "./storage";
 import type { Alarm, Ringing } from "./types";
 
-const QUICK_MINUTES = [5, 10, 20, 30];
+const TITLES: Record<Tab, string> = { alarms: "Alarms", nap: "Nap", babies: "Babies", settings: "Settings" };
+
+type WakeLockSentinel = { release: () => Promise<void> };
+type WakeLockApi = { request: (t: "screen") => Promise<WakeLockSentinel> };
 
 function safeStorage(): Storage | null {
   try {
@@ -30,15 +36,12 @@ function safeStorage(): Storage | null {
   }
 }
 
-function sortAlarms(alarms: Alarm[]): Alarm[] {
-  const key = (a: Alarm) => {
-    if (a.fireAt !== undefined) {
-      const d = new Date(a.fireAt);
-      return d.getHours() * 60 + d.getMinutes();
-    }
-    return a.hour * 60 + a.minute;
-  };
-  return [...alarms].sort((x, y) => key(x) - key(y));
+function notifyState(): NotifyState {
+  return typeof Notification === "undefined" ? "unsupported" : (Notification.permission as NotifyState);
+}
+
+function wakeLockApi(): WakeLockApi | undefined {
+  return typeof navigator !== "undefined" ? (navigator as Navigator & { wakeLock?: WakeLockApi }).wakeLock : undefined;
 }
 
 interface Props {
@@ -49,22 +52,27 @@ interface Props {
 
 export function App({ player: injected, clockNow = Date.now }: Props) {
   const player = useMemo(() => injected ?? new BabyPlayer("./"), [injected]);
-  const [clock, setClock] = useState<ClockState>(() => {
-    const saved = load(safeStorage());
-    return { alarms: saved.alarms, snoozes: saved.snoozes, ringing: null, lastCheck: clockNow() };
-  });
+  const initial = useMemo(() => load(safeStorage()), []);
+  const [clock, setClock] = useState<ClockState>(() => ({
+    alarms: initial.alarms,
+    snoozes: initial.snoozes,
+    ringing: null,
+    lastCheck: clockNow(),
+  }));
+  const [settings, setSettings] = useState<Settings>(initial.settings);
   const [now, setNow] = useState(clockNow);
+  const [tab, setTab] = useState<Tab>("alarms");
   const [editing, setEditing] = useState<{ alarm: Alarm; isNew: boolean } | null>(null);
-  const [showCredits, setShowCredits] = useState(false);
   const [test, setTest] = useState<{ alarm: Alarm; ringing: Ringing } | null>(null);
   const [armed, setArmed] = useState(false);
   const [bedside, setBedside] = useState(false);
-  const wakeLock = useRef<{ release: () => Promise<void> } | null>(null);
+  const [notify, setNotify] = useState<NotifyState>(notifyState);
+  const wakeLock = useRef<WakeLockSentinel | null>(null);
 
-  // Persist alarms and pending snoozes.
+  // Persist alarms, pending snoozes and settings.
   useEffect(() => {
-    save(safeStorage(), { alarms: clock.alarms, snoozes: clock.snoozes, seeded: true });
-  }, [clock.alarms, clock.snoozes]);
+    save(safeStorage(), { alarms: clock.alarms, snoozes: clock.snoozes, seeded: true, settings });
+  }, [clock.alarms, clock.snoozes, settings]);
 
   // The scheduler: once a second, and immediately when the tab comes back.
   useEffect(() => {
@@ -110,7 +118,7 @@ export function App({ player: injected, clockNow = Date.now }: Props) {
     }
     const prevTitle = document.title;
     document.title = `😭 ${alarm.label || "Alarm"}`;
-    if (document.visibilityState !== "visible" && typeof Notification !== "undefined" && Notification.permission === "granted") {
+    if (document.visibilityState !== "visible" && notifyState() === "granted") {
       try {
         new Notification(alarm.label || "Alarm", { body: "The baby is crying. Come back to stop it.", tag: "baby-cry-alarm" });
       } catch {
@@ -128,12 +136,17 @@ export function App({ player: injected, clockNow = Date.now }: Props) {
 
   const arm = useCallback(async () => {
     if (armed) return;
-    const ok = await player.unlock();
-    setArmed(ok);
-    if (ok && typeof Notification !== "undefined" && Notification.permission === "default") {
-      void Notification.requestPermission().catch(() => undefined);
-    }
+    setArmed(await player.unlock());
   }, [armed, player]);
+
+  const requestNotify = async () => {
+    if (typeof Notification === "undefined") return;
+    try {
+      setNotify((await Notification.requestPermission()) as NotifyState);
+    } catch {
+      setNotify(notifyState());
+    }
+  };
 
   const toggleBedside = async () => {
     await arm();
@@ -143,87 +156,75 @@ export function App({ player: injected, clockNow = Date.now }: Props) {
       setBedside(false);
       return;
     }
-    const wl = (navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> } }).wakeLock;
     try {
-      wakeLock.current = wl ? await wl.request("screen") : null;
+      wakeLock.current = (await wakeLockApi()?.request("screen")) ?? null;
     } catch {
       wakeLock.current = null;
     }
     setBedside(true);
   };
 
-  const next = nextRing(clock.alarms, clock.snoozes, now);
-  const nowDate = new Date(now);
-  const big = formatClock(nowDate.getHours(), nowDate.getMinutes());
-  const dateLine = nowDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-
-  const addQuick = (minutes: number) => {
+  const addNap = (minutes: number) => {
     const at = Math.floor((clockNow() + minutes * 60_000) / 1000) * 1000;
     const d = new Date(at);
     setClock((s) =>
       upsertAlarm(
         s,
-        defaultAlarm({ hour: d.getHours(), minute: d.getMinutes(), fireAt: at, label: `${minutes}-min nap`, rampSeconds: 15 }),
+        alarmFromSettings(settings, {
+          hour: d.getHours(),
+          minute: d.getMinutes(),
+          fireAt: at,
+          label: `${minutes}-min nap`,
+          rampSeconds: 15,
+        }),
       ),
     );
     void arm();
   };
 
+  const next = nextRing(clock.alarms, clock.snoozes, now);
+  const nowDate = new Date(now);
+  const big = formatClock(nowDate.getHours(), nowDate.getMinutes(), settings.use24h);
+  const dateLine = nowDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
   const snoozeMap = new Map(clock.snoozes.map((s) => [s.alarmId, s.at]));
 
   return (
-    <div className="app" onPointerDown={() => void arm()}>
+    <div className="app" onClick={() => void arm()}>
       <header className="top">
         <div className="brand">
           <span aria-hidden>😭</span> Baby Cry Alarm
         </div>
-        <div className="top-actions">
-          <button type="button" className={`pill ${bedside ? "on" : ""}`} onClick={() => void toggleBedside()}>
-            {bedside ? "🌙 Bedside on" : "🌙 Bedside"}
-          </button>
-          <button type="button" className="pill" onClick={() => setShowCredits(true)}>
-            Babies
-          </button>
-        </div>
+        <h1 className="tab-title">{TITLES[tab]}</h1>
       </header>
 
+      {tab === "alarms" && (
       <section className="hero">
         <div className="now" aria-label="Current time">
           {big.time}
-          <span className="meridiem">{big.meridiem}</span>
+          {big.meridiem && <span className="meridiem">{big.meridiem}</span>}
         </div>
         <div className="date">{dateLine}</div>
         <div className="next" aria-live="polite">
           {next ? `Next cry ${formatCountdown(next.at - now)}` : "No alarms set. Sleep in peace."}
         </div>
       </section>
+      )}
 
       {!armed && (
         <button type="button" className="arm" onClick={() => void arm()}>
           🔇 Tap to let the baby cry. Browsers keep the sound off until you tap once.
         </button>
       )}
-      {bedside && <div className="note">Screen stays on. Leave this tab open by the bed, plugged in.</div>}
 
-      <section className="quick" aria-label="Quick nap alarm">
-        <span className="quick-title">Nap</span>
-        {QUICK_MINUTES.map((m) => (
-          <button key={m} type="button" className="chip" onClick={() => addQuick(m)}>
-            +{m} min
-          </button>
-        ))}
-      </section>
-
-      <main className="list">
-        {clock.alarms.length === 0 && <p className="empty">No alarms yet. Tap + to add one.</p>}
-        {sortAlarms(clock.alarms).map((a) => (
-          <AlarmCard
-            key={a.id}
-            alarm={a}
+      <main>
+        {tab === "alarms" && (
+          <AlarmsView
+            alarms={clock.alarms}
             now={now}
-            snoozedUntil={snoozeMap.get(a.id)}
-            onOpen={() => setEditing({ alarm: a, isNew: false })}
-            onToggle={(on) =>
+            use24h={settings.use24h}
+            snoozedUntil={snoozeMap}
+            onOpen={(a) => setEditing({ alarm: a, isNew: false })}
+            onToggle={(a, on) =>
               setClock((s) =>
                 on && a.fireAt !== undefined && nextOccurrence({ ...a, enabled: true }, clockNow()) === null
                   ? // A quick alarm already in the past comes back as a one-off at the same clock time.
@@ -231,23 +232,52 @@ export function App({ player: injected, clockNow = Date.now }: Props) {
                   : setEnabled(s, a.id, on),
               )
             }
-            onSkip={() => setClock((s) => skipNext(s, a.id, clockNow()))}
+            onSkip={(a) => setClock((s) => skipNext(s, a.id, clockNow()))}
           />
-        ))}
+        )}
+        {tab === "nap" && (
+          <NapView
+            alarms={clock.alarms}
+            now={now}
+            use24h={settings.use24h}
+            bedside={bedside}
+            wakeLockSupported={wakeLockApi() !== undefined}
+            onNap={addNap}
+            onCancel={(id) => setClock((s) => removeAlarm(s, id))}
+            onToggleBedside={() => void toggleBedside()}
+          />
+        )}
+        {tab === "babies" && (
+          <BabiesView
+            player={player}
+            defaultVoice={settings.defaultVoice}
+            onDefaultVoice={(v) => setSettings((s) => ({ ...s, defaultVoice: v }))}
+          />
+        )}
+        {tab === "settings" && (
+          <SettingsView
+            settings={settings}
+            onChange={setSettings}
+            notify={notify}
+            onRequestNotify={() => void requestNotify()}
+            alarmCount={clock.alarms.length}
+            onDeleteAll={() => setClock((s) => ({ ...s, alarms: [], snoozes: [], ringing: null }))}
+          />
+        )}
       </main>
 
-      <button
-        type="button"
-        className="fab"
-        aria-label="Add alarm"
-        onClick={() => setEditing({ alarm: defaultAlarm({ hour: 7, minute: 0 }), isNew: true })}
-      >
-        +
-      </button>
+      {tab === "alarms" && (
+        <button
+          type="button"
+          className="fab"
+          aria-label="Add alarm"
+          onClick={() => setEditing({ alarm: alarmFromSettings(settings, { hour: 7, minute: 0 }), isNew: true })}
+        >
+          +
+        </button>
+      )}
 
-      <footer className="foot">
-        Real recorded babies · <button type="button" className="link" onClick={() => setShowCredits(true)}>credits & licenses</button>
-      </footer>
+      <TabBar active={tab} onChange={setTab} />
 
       {editing && (
         <AlarmEditor
@@ -271,14 +301,13 @@ export function App({ player: injected, clockNow = Date.now }: Props) {
         />
       )}
 
-      {showCredits && <Credits onClose={() => setShowCredits(false)} />}
-
       {active && (
         <RingingScreen
           key={ringKey!}
           ringing={active.ringing}
           alarm={active.alarm}
           now={now}
+          use24h={settings.use24h}
           snoozesLeft={test ? active.alarm.snooze.maxCount : snoozesLeft(clock)}
           onSnooze={() => (test ? setTest(null) : setClock((s) => snooze(s, clockNow())))}
           onDismiss={() => (test ? setTest(null) : setClock((s) => dismiss(s, clockNow())))}

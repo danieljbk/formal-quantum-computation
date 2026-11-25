@@ -8,13 +8,15 @@ interface Props {
   alarm: Alarm;
   now: number;
   snoozedUntil?: number;
+  use24h: boolean;
   onOpen: () => void;
   onToggle: (enabled: boolean) => void;
   onSkip: () => void;
 }
 
-export function AlarmCard({ alarm, now, snoozedUntil, onOpen, onToggle, onSkip }: Props) {
-  const t = describeAlarmTime(alarm);
+export function AlarmCard({ alarm, now, snoozedUntil, use24h, onOpen, onToggle, onSkip }: Props) {
+  const t = describeAlarmTime(alarm, use24h);
+  const spoken = `${t.time}${t.meridiem ? ` ${t.meridiem}` : ""}`;
   const next = nextOccurrence(alarm, now);
   const skipping = alarm.skipUntil !== undefined && alarm.enabled;
   const when =
@@ -23,13 +25,13 @@ export function AlarmCard({ alarm, now, snoozedUntil, onOpen, onToggle, onSkip }
   return (
     <article
       className={`card ${alarm.enabled ? "" : "off"}`}
-      aria-label={`Alarm ${t.time} ${t.meridiem}${alarm.label ? `, ${alarm.label}` : ""}`}
+      aria-label={`Alarm ${spoken}${alarm.label ? `, ${alarm.label}` : ""}`}
       onClick={onOpen}
     >
       <div className="card-main">
         <div className="card-time">
           {t.time}
-          <span className="meridiem">{t.meridiem}</span>
+          {t.meridiem && <span className="meridiem">{t.meridiem}</span>}
         </div>
         <div className="card-meta">
           <span>{alarm.label || "Alarm"}</span>
@@ -56,7 +58,7 @@ export function AlarmCard({ alarm, now, snoozedUntil, onOpen, onToggle, onSkip }
         )}
       </div>
       <div className="card-side">
-        <Toggle label={`Alarm ${t.time} ${t.meridiem} on`} checked={alarm.enabled} onChange={onToggle} />
+        <Toggle label={`Alarm ${spoken} on`} checked={alarm.enabled} onChange={onToggle} />
         {alarm.enabled && alarm.repeat.length > 0 && alarm.fireAt === undefined && !skipping && (
           <button
             type="button"

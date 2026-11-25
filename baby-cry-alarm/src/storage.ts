@@ -1,13 +1,72 @@
 import { isVoiceChoice } from "./sounds";
-import type { Alarm, Mission, Snooze, Weekday } from "./types";
+import type { Alarm, Mission, Snooze, VoiceChoice, Weekday } from "./types";
 
 export const STORAGE_KEY = "baby-cry-alarm/v1";
+
+export interface Settings {
+  /** Show times as 07:00 / 19:00 instead of 7:00 AM / 7:00 PM. */
+  use24h: boolean;
+  /** Baby used for new alarms and quick naps. */
+  defaultVoice: VoiceChoice;
+  /** Mission given to new alarms. */
+  defaultMission: Mission["kind"];
+  /** Snooze length for new alarms, in minutes. */
+  defaultSnoozeMinutes: number;
+}
+
+export const DEFAULT_SETTINGS: Settings = {
+  use24h: false,
+  defaultVoice: "newborn",
+  defaultMission: "none",
+  defaultSnoozeMinutes: 5,
+};
 
 export interface Saved {
   alarms: Alarm[];
   snoozes: Snooze[];
   /** True once the first-run morning alarm has been created. */
   seeded: boolean;
+  settings: Settings;
+}
+
+const MISSION_KINDS: Mission["kind"][] = ["none", "math", "typing", "rock"];
+
+export function parseSettings(x: unknown): Settings {
+  const s = (x ?? {}) as Record<string, unknown>;
+  return {
+    use24h: s.use24h === true,
+    defaultVoice: isVoiceChoice(s.defaultVoice) ? s.defaultVoice : DEFAULT_SETTINGS.defaultVoice,
+    defaultMission: MISSION_KINDS.includes(s.defaultMission as Mission["kind"])
+      ? (s.defaultMission as Mission["kind"])
+      : DEFAULT_SETTINGS.defaultMission,
+    defaultSnoozeMinutes: isInt(s.defaultSnoozeMinutes)
+      ? clamp(s.defaultSnoozeMinutes, 1, 30)
+      : DEFAULT_SETTINGS.defaultSnoozeMinutes,
+  };
+}
+
+/** The starting mission for a given kind, used by the editor and by settings. */
+export function missionOfKind(kind: Mission["kind"]): Mission {
+  switch (kind) {
+    case "none":
+      return { kind: "none" };
+    case "math":
+      return { kind: "math", difficulty: 1, rounds: 3 };
+    case "typing":
+      return { kind: "typing", rounds: 1 };
+    case "rock":
+      return { kind: "rock", rocks: 20 };
+  }
+}
+
+/** A new alarm that follows the user's defaults. */
+export function alarmFromSettings(settings: Settings, overrides: Partial<Alarm> = {}): Alarm {
+  return defaultAlarm({
+    voice: settings.defaultVoice,
+    mission: missionOfKind(settings.defaultMission),
+    snooze: { enabled: true, minutes: settings.defaultSnoozeMinutes, maxCount: 3 },
+    ...overrides,
+  });
 }
 
 let counter = 0;
@@ -101,7 +160,7 @@ export function parseSaved(raw: string | null): Saved | null {
           (s) => s && typeof s.alarmId === "string" && isInt(s.at) && isInt(s.count) && alarms.some((a) => a.id === s.alarmId),
         )
       : [];
-    return { alarms, snoozes, seeded: data.seeded === true };
+    return { alarms, snoozes, seeded: data.seeded === true, settings: parseSettings(data.settings) };
   } catch {
     return null;
   }
@@ -120,7 +179,12 @@ export function load(storage: Pick<Storage, "getItem"> | null): Saved {
     parsed = null;
   }
   if (parsed && parsed.seeded) return parsed;
-  return { alarms: [...(parsed?.alarms ?? []), morningAlarm()], snoozes: parsed?.snoozes ?? [], seeded: true };
+  return {
+    alarms: [...(parsed?.alarms ?? []), morningAlarm()],
+    snoozes: parsed?.snoozes ?? [],
+    seeded: true,
+    settings: parsed?.settings ?? { ...DEFAULT_SETTINGS },
+  };
 }
 
 export function save(storage: Pick<Storage, "setItem"> | null, saved: Saved): void {

@@ -43,7 +43,7 @@ button {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 96px);
+  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 160px);
   background: radial-gradient(120% 60% at 50% 0%, #2b2f62 0%, var(--bg) 60%);
 }
 
@@ -272,7 +272,7 @@ button {
 .fab {
   position: fixed;
   right: max(16px, calc(50vw - 240px + 16px));
-  bottom: calc(env(safe-area-inset-bottom) + 20px);
+  bottom: calc(env(safe-area-inset-bottom) + 84px);
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -296,7 +296,7 @@ button {
   position: fixed;
   inset: 0;
   background: var(--bg);
-  z-index: 10;
+  z-index: 30;
   display: flex;
   flex-direction: column;
   max-width: 480px;
@@ -595,7 +595,7 @@ button {
 .ringing {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 40;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -814,4 +814,111 @@ button {
   .tear {
     animation: none;
   }
+}
+
+/* Tabs and views */
+.tab-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  max-width: 480px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 6px 8px calc(env(safe-area-inset-bottom) + 6px);
+  background: rgba(20, 22, 43, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--line);
+}
+
+.tabbar button {
+  border: none;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 12px;
+}
+
+.tabbar button.on {
+  color: var(--accent);
+  background: rgba(255, 179, 138, 0.1);
+}
+
+.tab-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.view {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-title {
+  font-size: 17px;
+  margin: 8px 0 0;
+}
+
+.credits {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.center {
+  text-align: center;
+}
+
+.nap-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.nap-btn {
+  border: 1px solid var(--line);
+  background: var(--bg-2);
+  border-radius: 14px;
+  padding: 12px 0 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nap-btn:active {
+  background: var(--accent);
+  color: #2a1a10;
+}
+
+.nap-num {
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.nap-unit {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.nap-row {
+  font-size: 15px;
 }

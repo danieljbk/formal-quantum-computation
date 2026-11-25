@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { BabyPlayer } from "../audio";
 import { DAY_SHORT, describeRepeat } from "../schedule";
+import { missionOfKind } from "../storage";
 import type { Alarm, Mission, Weekday } from "../types";
 import { Toggle } from "./Toggle";
 import { VoicePicker } from "./VoicePicker";
@@ -29,19 +30,6 @@ const MISSION_KINDS: { kind: Mission["kind"]; label: string; icon: string }[] = 
   { kind: "typing", label: "Type", icon: "⌨️" },
   { kind: "rock", label: "Rock", icon: "🤱" },
 ];
-
-function defaultMission(kind: Mission["kind"]): Mission {
-  switch (kind) {
-    case "none":
-      return { kind: "none" };
-    case "math":
-      return { kind: "math", difficulty: 1, rounds: 3 };
-    case "typing":
-      return { kind: "typing", rounds: 1 };
-    case "rock":
-      return { kind: "rock", rocks: 20 };
-  }
-}
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -144,7 +132,7 @@ export function AlarmEditor({ initial, isNew, player, onSave, onCancel, onDelete
                 role="radio"
                 aria-checked={a.mission.kind === m.kind}
                 className={a.mission.kind === m.kind ? "on" : ""}
-                onClick={() => a.mission.kind !== m.kind && set("mission", defaultMission(m.kind))}
+                onClick={() => a.mission.kind !== m.kind && set("mission", missionOfKind(m.kind))}
               >
                 <span aria-hidden>{m.icon}</span> {m.label}
               </button>

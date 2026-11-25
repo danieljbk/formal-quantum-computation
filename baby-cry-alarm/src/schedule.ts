@@ -87,7 +87,12 @@ export function dueInWindow(
   return [...due.values()].sort((x, y) => x.at - y.at);
 }
 
-export function formatClock(hour: number, minute: number): { time: string; meridiem: "AM" | "PM" } {
+export function formatClock(
+  hour: number,
+  minute: number,
+  use24h = false,
+): { time: string; meridiem: "AM" | "PM" | "" } {
+  if (use24h) return { time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`, meridiem: "" };
   const meridiem = hour < 12 ? "AM" : "PM";
   const h12 = hour % 12 === 0 ? 12 : hour % 12;
   return { time: `${h12}:${String(minute).padStart(2, "0")}`, meridiem };
@@ -120,12 +125,12 @@ export function describeRepeat(repeat: Weekday[]): string {
     .join(" ");
 }
 
-export function describeAlarmTime(alarm: Alarm): { time: string; meridiem: string } {
+export function describeAlarmTime(alarm: Alarm, use24h = false): { time: string; meridiem: string } {
   if (alarm.fireAt !== undefined) {
     const d = new Date(alarm.fireAt);
-    return formatClock(d.getHours(), d.getMinutes());
+    return formatClock(d.getHours(), d.getMinutes(), use24h);
   }
-  return formatClock(alarm.hour, alarm.minute);
+  return formatClock(alarm.hour, alarm.minute, use24h);
 }
 
 export { DAY_SHORT };

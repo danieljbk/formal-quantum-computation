@@ -88,6 +88,8 @@ describe("formatting", () => {
     expect(formatClock(0, 5)).toEqual({ time: "12:05", meridiem: "AM" });
     expect(formatClock(12, 0)).toEqual({ time: "12:00", meridiem: "PM" });
     expect(formatClock(19, 45)).toEqual({ time: "7:45", meridiem: "PM" });
+    expect(formatClock(7, 5, true)).toEqual({ time: "07:05", meridiem: "" });
+    expect(formatClock(19, 45, true)).toEqual({ time: "19:45", meridiem: "" });
   });
 
   it("formats countdowns", () => {
