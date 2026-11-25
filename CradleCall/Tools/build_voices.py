@@ -32,6 +32,8 @@ VOICES = [
     ("cry_toddler_girl", "69309582-5CAE-415F-A7E3-67BEC99DCB1B"),
 ]
 TARGET_SECONDS = 26.0
+# Core Audio Format: playable by AVAudioPlayer and usable as a notification sound.
+AUDIO_EXT = "caf"
 
 
 def probe(path):
@@ -53,7 +55,7 @@ def main(corpus, out_dir):
     for voice_id, install in VOICES:
         clips = []
         for name in sorted(os.listdir(bucket)):
-            if not name.startswith(install) or not name.endswith(".caf"):
+            if not name.startswith(install) or os.path.splitext(name)[1].lstrip(".") != AUDIO_EXT:
                 continue
             mean, dur, silence = probe(os.path.join(bucket, name))
             if silence < 1.0 and dur >= 4.0:
@@ -77,7 +79,7 @@ def main(corpus, out_dir):
             f";{concat}concat=n={len(chosen)}:v=0:a=1,highpass=f=120,"
             f"loudnorm=I=-14:TP=-1.0:LRA=11,aresample=22050,"
             f"atrim=0:{TARGET_SECONDS},afade=t=out:st={TARGET_SECONDS - 0.3}:d=0.3[out]")
-        dest = os.path.join(out_dir, voice_id + ".caf")
+        dest = os.path.join(out_dir, os.extsep.join([voice_id, AUDIO_EXT]))
         subprocess.run(["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", *inputs,
                         "-filter_complex", graph, "-map", "[out]", "-ac", "1",
                         "-c:a", "adpcm_ima_qt", "-f", "caf", dest], check=True)
