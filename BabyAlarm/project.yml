@@ -1,0 +1,59 @@
+name: BabyAlarm
+options:
+  bundleIdPrefix: app.babyalarm
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+targets:
+  BabyAlarm:
+    type: application
+    platform: iOS
+    sources:
+      - path: BabyAlarm
+    info:
+      path: Config/Info.plist
+      properties:
+        CFBundleDisplayName: Baby Alarm
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSupportsIndirectInputEvents: true
+        UIBackgroundModes:
+          - audio
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.babyalarm.BabyAlarm
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_PREVIEWS: YES
+  BabyAlarmTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: BabyAlarmTests
+    dependencies:
+      - target: BabyAlarm
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.babyalarm.BabyAlarmTests
+schemes:
+  BabyAlarm:
+    build:
+      targets:
+        BabyAlarm: all
+        BabyAlarmTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - BabyAlarmTests
