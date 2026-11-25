@@ -1,0 +1,26 @@
+{
+  "name": "wail-alarm",
+  "private": true,
+  "version": "1.0.0",
+  "description": "A mission-based alarm clock web app (iOS-style) that wakes you with real baby-crying recordings.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.7",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.7.0",
+    "typescript": "5.6.3",
+    "vite": "6.4.6",
+    "vitest": "4.1.12"
+  }
+}

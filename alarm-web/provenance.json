@@ -1,0 +1,64 @@
+{
+  "description": "Provenance log for every bundled audio asset. Each recording was fetched over the open network from Wikimedia Commons, its SHA-1 checked against the Commons API, and then transcoded (format conversion only) to mono 96 kbps MP3 for iOS Safari playback.",
+  "fetchedAt": "2026-11-25",
+  "transcode": "ffmpeg -i <original> -vn -ac 1 -ar 44100 -codec:a libmp3lame -b:a 96k -map_metadata -1 <output>.mp3",
+  "assets": [
+    {
+      "id": "newborn",
+      "file": "public/sounds/newborn.mp3",
+      "sha256": "7a00add8a7ac49bbab796f03c4106784ba00baf0316987d10c8a00103e5dd9d4",
+      "title": "Crying newborn baby",
+      "author": "the_yura (via Freesound)",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Crying_newborn_baby.ogg",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Crying_newborn_baby.ogg",
+      "sourceSha1": "16f95806c6425912c808ee52300a14502f862ce9",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "redistributable": true
+    },
+    {
+      "id": "wanting",
+      "file": "public/sounds/wanting.mp3",
+      "sha256": "a77f85a1929e280f04f0bc61c5f80abede66c3117a6501959b30037cd8a43025",
+      "title": "Baby long wanting cry",
+      "author": "natalie (pdsounds.org, transferred by Fæ)",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Baby_long_wanting_cry.ogg",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Baby_long_wanting_cry.ogg",
+      "sourceSha1": "c5b0bf176dea3e7b81495af06a8d92d8521575ab",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Baby_long_wanting_cry.ogg",
+      "attributionRequired": false,
+      "redistributable": true
+    },
+    {
+      "id": "disappointed",
+      "file": "public/sounds/disappointed.mp3",
+      "sha256": "0fdd03e1456babed5091c06f76b4680a444e05671370e4227e5b88ccd520cc9c",
+      "title": "Baby's disappointed crying",
+      "author": "natalie (pdsounds.org, transferred by Fæ)",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Babys_disappointed_crying.oga",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Babys_disappointed_crying.oga",
+      "sourceSha1": "7b80bd9ad40ad6a72844b2ef3d4231f4d3a660da",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Babys_disappointed_crying.oga",
+      "attributionRequired": false,
+      "redistributable": true
+    },
+    {
+      "id": "kunjappi",
+      "file": "public/sounds/kunjappi.mp3",
+      "sha256": "67cc73b033bb126f9a931ec30b7791393ac998fa41eea2f2976f8b9279bcc25f",
+      "title": "Newborn baby crying sounds 20190831 061900",
+      "author": "Manoj Karingamadathil",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Newborn_baby_crying_sounds_20190831_061900.wav",
+      "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Newborn_baby_crying_sounds_20190831_061900.wav",
+      "sourceSha1": "369e5e6bbde178cec389aaf78e4a4b0804ce29c7",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attributionRequired": true,
+      "redistributable": true,
+      "notes": "Transcoded from WAV to MP3; the MP3 is distributed under the same CC BY-SA 4.0 license."
+    }
+  ]
+}
