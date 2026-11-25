@@ -5,6 +5,7 @@ import UserNotifications
 struct SettingsView: View {
     @EnvironmentObject private var engine: AlarmEngine
     @EnvironmentObject private var settings: AppSettingsStore
+    @ObservedObject private var systemAlarms = SystemAlarmService.shared
     @State private var permissionRows: [PermissionRow] = []
     private let manifest = SoundManifest.load(from: .main)
     private let sleepManifest = SoundManifest.load(from: .main, named: "sleep_sounds")
@@ -49,11 +50,15 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    LabeledContent("System alarm (AlarmKit)", value: systemAlarmText)
+                    if systemAlarms.status == .notDetermined {
+                        Button("Allow system alarms") { systemAlarms.requestAuthorization() }
+                    }
                     Toggle("Keep ringing from the background", isOn: $engine.keepAliveEnabled)
                 } header: {
                     Text("Ringing")
                 } footer: {
-                    Text("While an alarm is set, the app keeps a silent audio stream running in the background so the crying can play at full length. Without it, iOS limits each notification sound to 30 seconds and the app repeats them until you open it. Force-quitting the app turns this off until you open it again.")
+                    Text("On iOS 26 and later, alarms are also registered as system alarms: they ring through Silent mode and Focus even if the app was closed, and “Calm the baby” opens your missions. On every iOS version the app also keeps a silent audio stream running in the background so the crying plays at full length, and repeats 30-second notification cries until you open it.")
                 }
 
                 Section {
@@ -97,7 +102,17 @@ struct SettingsView: View {
         }
     }
 
+    private var systemAlarmText: String {
+        switch systemAlarms.status {
+        case .authorized: return "On"
+        case .denied: return "Off"
+        case .notDetermined: return "Not asked"
+        case .unsupported: return "Needs iOS 26"
+        }
+    }
+
     private func refreshPermissions() {
+        SystemAlarmService.shared.refreshStatus()
         engine.refreshNotificationStatus()
         UNUserNotificationCenter.current().getNotificationSettings { s in
             let status = s.authorizationStatus

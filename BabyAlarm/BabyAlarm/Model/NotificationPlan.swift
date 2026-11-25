@@ -118,3 +118,53 @@ enum NotificationPlanner {
         return Array(items.prefix(budget))
     }
 }
+
+/// A ring handed to the system alarm service (AlarmKit on iOS 26+), which can sound
+/// through Silent mode and Focus even if the app was force-quit.
+struct SystemAlarmItem: Equatable {
+    /// Notification-style identifier, so "Calm the baby" opens the same ring in the app.
+    let identifier: String
+    let date: Date
+    let title: String
+    let soundFile: String
+}
+
+enum SystemAlarmPlanner {
+    static let occurrencesPerAlarm = 3
+    static let maxItems = 30
+
+    static func plan(core: AlarmEngineCore, now: Date) -> [SystemAlarmItem] {
+        let calendar = core.calendar
+        var items: [SystemAlarmItem] = []
+
+        func add(_ kind: NotificationKind, alarm: Alarm, key: OccurrenceKey, at date: Date, extra: Int) {
+            guard date > now else { return }
+            let voice = BabyVoiceCatalog.resolve(alarm.voiceID, for: key.occurrence, calendar: calendar)
+            items.append(SystemAlarmItem(identifier: NotificationID(kind: kind, key: key, index: 0, extra: extra).string,
+                                         date: date, title: "👶 \(alarm.displayLabel)", soundFile: voice.fileName))
+        }
+
+        for alarm in core.alarms where alarm.isEnabled {
+            for date in AlarmSchedule.upcomingFireDates(for: alarm, after: now, count: occurrencesPerAlarm, calendar: calendar) {
+                let key = OccurrenceKey(alarmID: alarm.id, occurrence: date)
+                if core.isHandled(key) || core.state.pending.contains(where: { $0.key == key }) { continue }
+                add(.alarm, alarm: alarm, key: key, at: date, extra: 0)
+            }
+        }
+        for event in core.state.pending {
+            guard let alarm = core.alarms.first(where: { $0.id == event.key.alarmID }) else { continue }
+            switch event.kind {
+            case .snooze(let count):
+                add(.snooze, alarm: alarm, key: event.key, at: event.fireDate, extra: count)
+            case .wakeCheck:
+                add(.rering, alarm: alarm, key: event.key,
+                    at: event.fireDate.addingTimeInterval(TimeInterval(alarm.wakeUpCheck.confirmWindowSeconds)), extra: 0)
+            }
+        }
+        if let check = core.wakeCheck, let alarm = core.alarms.first(where: { $0.id == check.alarm.id }) {
+            add(.rering, alarm: alarm, key: check.key, at: check.deadline, extra: 0)
+        }
+        items.sort { ($0.date, $0.identifier) < ($1.date, $1.identifier) }
+        return Array(items.prefix(maxItems))
+    }
+}

@@ -70,3 +70,33 @@ final class NotificationPlanTests: XCTestCase {
         XCTAssertFalse(plan.contains { $0.id.kind == .rering && $0.allowsSnooze })
     }
 }
+
+final class SystemAlarmPlanTests: XCTestCase {
+    func testPlansNextOccurrencesAndSnoozes() {
+        var a = T.alarm(7, 0, repeats: Weekday.weekdays)
+        a.voiceID = "cry_hungry"
+        var core = T.core([a], lastTick: T.date("2026-11-25 06:59"))
+        var plan = SystemAlarmPlanner.plan(core: core, now: T.date("2026-11-25 06:00"))
+        XCTAssertEqual(plan.map(\.date), [T.date("2026-11-25 07:00"), T.date("2026-11-26 07:00"), T.date("2026-11-27 07:00")])
+        XCTAssertTrue(plan.allSatisfy { $0.soundFile == "cry_hungry.caf" })
+        XCTAssertEqual(NotificationID.parse(plan[0].identifier)?.kind, .alarm)
+
+        core.tick(now: T.date("2026-11-25 07:00:00"))
+        core.snooze(now: T.date("2026-11-25 07:00:10"))
+        plan = SystemAlarmPlanner.plan(core: core, now: T.date("2026-11-25 07:00:11"))
+        XCTAssertEqual(plan.first?.date, T.date("2026-11-25 07:05:10"))
+        XCTAssertEqual(NotificationID.parse(plan.first!.identifier)?.kind, .snooze)
+        XCTAssertFalse(plan.contains { $0.date == T.date("2026-11-25 07:00") })
+    }
+
+    func testDisabledAndSkippedAlarmsAreNotHandedToTheSystem() {
+        var off = T.alarm(6, 0)
+        off.isEnabled = false
+        var skip = T.alarm(8, 0, repeats: Weekday.weekdays)
+        skip.skippedOccurrence = T.date("2026-11-25 08:00")
+        let plan = SystemAlarmPlanner.plan(core: T.core([off, skip], lastTick: T.date("2026-11-25 05:00")),
+                                           now: T.date("2026-11-25 05:00"))
+        XCTAssertEqual(plan.first?.date, T.date("2026-11-26 08:00"))
+        XCTAssertLessThanOrEqual(plan.count, SystemAlarmPlanner.maxItems)
+    }
+}

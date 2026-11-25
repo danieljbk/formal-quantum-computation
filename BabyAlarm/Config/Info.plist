@@ -24,6 +24,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAlarmKitUsageDescription</key>
+	<string>Lets your baby alarms ring like the Clock app, even in Silent mode or when the app is closed.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>The photo and barcode wake-up missions use the camera to check you got out of bed.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

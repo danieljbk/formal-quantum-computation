@@ -67,7 +67,14 @@ final class AlarmEngine: ObservableObject {
         started = true
         if live {
             NotificationService.shared.engine = self
-            NotificationService.shared.requestAuthorization { [weak self] _ in self?.refreshNotificationStatus() }
+            NotificationService.shared.requestAuthorization { [weak self] _ in
+                self?.refreshNotificationStatus()
+                // iOS 26+: ask once to let alarms ring like the system Clock alarm.
+                if SystemAlarmService.shared.status == .notDetermined {
+                    SystemAlarmService.shared.requestAuthorization()
+                }
+                self?.syncNotifications()
+            }
         }
         let t = Timer(timeInterval: 1, repeats: true) { [weak self] _ in self?.tick() }
         RunLoop.main.add(t, forMode: .common)
@@ -192,7 +199,9 @@ final class AlarmEngine: ObservableObject {
 
     private func syncNotifications() {
         guard live else { return }
-        NotificationService.shared.apply(NotificationPlanner.plan(core: core, now: Date()))
+        let now = Date()
+        NotificationService.shared.apply(NotificationPlanner.plan(core: core, now: now))
+        SystemAlarmService.shared.sync(SystemAlarmPlanner.plan(core: core, now: now))
     }
 
     private func updateKeepAlive() {

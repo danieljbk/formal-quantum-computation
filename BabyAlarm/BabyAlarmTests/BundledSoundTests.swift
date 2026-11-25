@@ -92,7 +92,7 @@ final class BundledSoundTests: XCTestCase {
     }
 
     func testPrivacyStringsForEveryPermission() {
-        for key in ["NSCameraUsageDescription", "NSMicrophoneUsageDescription", "NSMotionUsageDescription",
+        for key in ["NSAlarmKitUsageDescription", "NSCameraUsageDescription", "NSMicrophoneUsageDescription", "NSMotionUsageDescription",
                     "NSLocationWhenInUseUsageDescription"] {
             let text = bundle.object(forInfoDictionaryKey: key) as? String
             XCTAssertFalse((text ?? "").isEmpty, key)

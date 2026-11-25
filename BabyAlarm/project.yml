@@ -29,6 +29,7 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
+        NSAlarmKitUsageDescription: Lets your baby alarms ring like the Clock app, even in Silent mode or when the app is closed.
         NSCameraUsageDescription: The photo and barcode wake-up missions use the camera to check you got out of bed.
         NSMicrophoneUsageDescription: Sleep tracking records snoring and sleep talk overnight. Recordings stay on your phone.
         NSMotionUsageDescription: The steps wake-up mission counts your steps to make sure you are up.
