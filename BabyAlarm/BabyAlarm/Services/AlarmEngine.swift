@@ -15,6 +15,8 @@ final class AlarmEngine: ObservableObject {
 
     private(set) var core: AlarmEngineCore
     @Published private(set) var notificationStatus: UNAuthorizationStatus = .notDetermined
+    /// Set after an alarm is dismissed; the root view shows the morning briefing.
+    @Published var showBriefing = false
     @Published var keepAliveEnabled: Bool {
         didSet {
             defaults.set(keepAliveEnabled, forKey: Self.keepAliveKey)
@@ -123,7 +125,21 @@ final class AlarmEngine: ObservableObject {
     // MARK: Ringing
 
     func snooze() { mutate { $0.snooze(now: Date()) } }
-    func dismiss() { mutate { $0.dismiss(now: Date()) } }
+
+    func dismiss() {
+        let wasRinging = core.ringing != nil
+        mutate { $0.dismiss(now: Date()) }
+        if wasRinging, core.ringing == nil, AppSettingsStore.shared.prefs.showBriefingAfterAlarm {
+            showBriefing = true
+        }
+    }
+
+    func duplicate(id: UUID) { mutate { $0.duplicate(id: id) } }
+    func skipNext(id: UUID) { mutate { $0.skipNext(id: id, now: Date()) } }
+    func clearSkip(id: UUID) { mutate { $0.clearSkip(id: id) } }
+    func clearHistory() { mutate { $0.clearHistory() } }
+
+    var history: [WakeRecord] { core.state.history }
     func confirmAwake() { mutate { $0.confirmAwake(now: Date()) } }
 
     func openedFromNotification(_ identifier: String) {
@@ -149,6 +165,7 @@ final class AlarmEngine: ObservableObject {
             || before.state.alarms != next.state.alarms
             || before.state.pending != next.state.pending
             || before.state.handled != next.state.handled
+            || before.state.history != next.state.history
         if changed { objectWillChange.send() }
         core = next
         guard changed else { return }
@@ -161,8 +178,11 @@ final class AlarmEngine: ObservableObject {
     private func ringingDidChange(from old: RingingSession?, to new: RingingSession?) {
         guard live else { return }
         if let r = new {
+            // Waking up ends tonight's sleep recording.
+            SleepService.shared.finishSleep()
             AudioService.shared.startRinging(voice: r.voice, volume: r.alarm.volume,
-                                             rampSeconds: r.alarm.gradualVolumeSeconds, vibrate: r.alarm.vibrate)
+                                             rampSeconds: r.alarm.gradualVolumeSeconds, vibrate: r.alarm.vibrate,
+                                             escalate: r.alarm.cryEscalation)
             NotificationService.shared.clearDelivered()
         } else {
             AudioService.shared.stopRinging()

@@ -41,8 +41,27 @@ final class NotificationService: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
+    /// Identifiers this process last scheduled, so replacing them is synchronous.
+    private var applied: Set<String> = []
+    private var sweptAtLaunch = false
+
     func apply(_ plan: [PlannedNotification], calendar: Calendar = .current) {
-        center.removeAllPendingNotificationRequests()
+        // Replace only alarm notifications; the bedtime reminder stays.
+        center.removePendingNotificationRequests(withIdentifiers: Array(applied))
+        add(plan, calendar: calendar)
+        let keep = Set(plan.map(\.id.string))
+        applied = keep
+        if !sweptAtLaunch {
+            sweptAtLaunch = true
+            // Requests left by a previous launch that are no longer planned.
+            center.getPendingNotificationRequests { [weak self] requests in
+                let stale = requests.map(\.identifier).filter { NotificationID.parse($0) != nil && !keep.contains($0) }
+                self?.center.removePendingNotificationRequests(withIdentifiers: stale)
+            }
+        }
+    }
+
+    private func add(_ plan: [PlannedNotification], calendar: Calendar) {
         for item in plan {
             let content = UNMutableNotificationContent()
             content.title = item.title

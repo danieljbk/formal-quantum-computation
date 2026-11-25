@@ -53,11 +53,28 @@ struct WakeCheckSession: Equatable {
 }
 
 struct EngineState: Codable, Equatable {
+    static let historyLimit = 400
+
     var alarms: [Alarm] = []
     var pending: [PendingEvent] = []
     /// Occurrences the user already dismissed, with the time they were handled.
     var handled: [String: Date] = [:]
     var lastTick: Date = Date()
+    /// Every morning the user got up, newest last.
+    var history: [WakeRecord] = []
+
+    init() {}
+
+    private enum CodingKeys: String, CodingKey { case alarms, pending, handled, lastTick, history }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        alarms = try c.decodeIfPresent([Alarm].self, forKey: .alarms) ?? []
+        pending = try c.decodeIfPresent([PendingEvent].self, forKey: .pending) ?? []
+        handled = try c.decodeIfPresent([String: Date].self, forKey: .handled) ?? [:]
+        lastTick = try c.decodeIfPresent(Date.self, forKey: .lastTick) ?? Date()
+        history = try c.decodeIfPresent([WakeRecord].self, forKey: .history) ?? []
+    }
 }
 
 /// Pure alarm state machine: no timers, audio or notifications. The app layer
@@ -110,10 +127,33 @@ struct AlarmEngineCore {
         alarm.oneShotDate = fire
         alarm.voiceID = voiceID
         alarm.label = "Quick alarm · \(minutes) min"
-        alarm.mission = .off
+        alarm.missions = []
         alarm.gradualVolumeSeconds = 0
         upsert(alarm)
         return alarm
+    }
+
+    mutating func duplicate(id: UUID) {
+        guard let alarm = state.alarms.first(where: { $0.id == id }) else { return }
+        upsert(alarm.duplicated())
+    }
+
+    /// Skip only the next ring of a repeating alarm.
+    mutating func skipNext(id: UUID, now: Date) {
+        guard let i = state.alarms.firstIndex(where: { $0.id == id }) else { return }
+        var alarm = state.alarms[i]
+        alarm.skippedOccurrence = nil
+        alarm.skippedOccurrence = AlarmSchedule.rawNextFireDate(for: alarm, after: now, calendar: calendar)
+        state.alarms[i] = alarm
+    }
+
+    mutating func clearSkip(id: UUID) {
+        guard let i = state.alarms.firstIndex(where: { $0.id == id }) else { return }
+        state.alarms[i].skippedOccurrence = nil
+    }
+
+    mutating func clearHistory() {
+        state.history.removeAll()
     }
 
     private mutating func sortAlarms() {
@@ -132,6 +172,7 @@ struct AlarmEngineCore {
         if let check = wakeCheck {
             if now >= check.deadline {
                 wakeCheck = nil
+                setWakeCheckResult(false, key: check.key)
                 state.pending.removeAll { $0.key == check.key && $0.kind == .wakeCheck }
                 startRinging(alarm: check.alarm, key: check.key, snoozeCount: 0, now: now, ignoreHandled: true)
             }
@@ -227,6 +268,7 @@ struct AlarmEngineCore {
         ringing = nil
         state.handled[r.key.string] = now
         state.pending.removeAll { $0.key == r.key }
+        recordWake(r, dismissedAt: now)
         if let live = state.alarms.first(where: { $0.id == r.alarm.id }), live.wakeUpCheck.isEnabled {
             state.pending.append(PendingEvent(key: r.key,
                                               fireDate: now.addingTimeInterval(TimeInterval(live.wakeUpCheck.delayMinutes * 60)),
@@ -242,6 +284,7 @@ struct AlarmEngineCore {
         }
         wakeCheck = nil
         state.pending.removeAll { $0.key == check.key }
+        setWakeCheckResult(true, key: check.key)
         if check.alarm.oneShotDate != nil { delete(id: check.alarm.id) }
     }
 
@@ -256,6 +299,31 @@ struct AlarmEngineCore {
            let i = state.alarms.firstIndex(where: { $0.id == alarm.id }) {
             state.alarms[i].isEnabled = false
         }
+    }
+
+    private mutating func recordWake(_ r: RingingSession, dismissedAt: Date) {
+        if let i = state.history.lastIndex(where: { $0.alarmID == r.alarm.id && $0.scheduled == r.key.occurrence }) {
+            // Re-ring after a missed wake-up check: keep the first record, extend it.
+            let old = state.history[i]
+            state.history[i] = WakeRecord(id: old.id, alarmID: old.alarmID, label: old.label, voiceID: old.voiceID,
+                                          scheduled: old.scheduled, rangAt: old.rangAt, dismissedAt: dismissedAt,
+                                          snoozeCount: old.snoozeCount + r.snoozeCount,
+                                          missionKinds: old.missionKinds, wakeCheckPassed: old.wakeCheckPassed)
+            return
+        }
+        state.history.append(WakeRecord(alarmID: r.alarm.id, label: r.alarm.displayLabel, voiceID: r.voice.id,
+                                         scheduled: r.key.occurrence, rangAt: r.startedAt, dismissedAt: dismissedAt,
+                                         snoozeCount: r.snoozeCount,
+                                         missionKinds: r.alarm.activeMissions.map(\.kind),
+                                         wakeCheckPassed: nil))
+        if state.history.count > EngineState.historyLimit {
+            state.history.removeFirst(state.history.count - EngineState.historyLimit)
+        }
+    }
+
+    private mutating func setWakeCheckResult(_ passed: Bool, key: OccurrenceKey) {
+        guard let i = state.history.lastIndex(where: { $0.alarmID == key.alarmID && $0.scheduled == key.occurrence }) else { return }
+        if state.history[i].wakeCheckPassed != false { state.history[i].wakeCheckPassed = passed }
     }
 
     private mutating func pruneHandled(now: Date) {

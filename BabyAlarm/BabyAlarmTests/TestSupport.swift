@@ -24,7 +24,7 @@ enum T {
         a.hour = hour
         a.minute = minute
         a.repeatDays = repeats
-        a.mission = mission
+        a.missions = mission.kind == .none ? [] : [mission]
         return a
     }
 

@@ -3,6 +3,15 @@ import Foundation
 enum AlarmSchedule {
     /// The first instant strictly after `date` at which `alarm` rings, or nil if it never will.
     static func nextFireDate(for alarm: Alarm, after date: Date, calendar: Calendar = .current) -> Date? {
+        guard let next = rawNextFireDate(for: alarm, after: date, calendar: calendar) else { return nil }
+        if let skipped = alarm.skippedOccurrence, abs(next.timeIntervalSince(skipped)) < 1 {
+            return rawNextFireDate(for: alarm, after: next, calendar: calendar)
+        }
+        return next
+    }
+
+    /// Next occurrence ignoring `skippedOccurrence`.
+    static func rawNextFireDate(for alarm: Alarm, after date: Date, calendar: Calendar = .current) -> Date? {
         guard alarm.isEnabled else { return nil }
         if let shot = alarm.oneShotDate {
             return shot > date ? shot : nil

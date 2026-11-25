@@ -9,7 +9,6 @@ struct VoiceGalleryView: View {
     private let manifest = SoundManifest.load(from: .main)
 
     var body: some View {
-        NavigationStack {
             List {
                 Section {
                     ForEach(BabyVoiceCatalog.all) { voice in
@@ -44,7 +43,7 @@ struct VoiceGalleryView: View {
                     Text("A different baby cries every morning.")
                 }
             }
-            .navigationTitle("Babies")
+            .navigationTitle("Baby voices")
             .onDisappear {
                 AudioService.shared.stopPreview()
                 playing = nil
@@ -59,7 +58,6 @@ struct VoiceGalleryView: View {
                 }
                 Button("Cancel", role: .cancel) { confirmApply = nil }
             }
-        }
     }
 
     private func togglePreview(_ voice: BabyVoice) {

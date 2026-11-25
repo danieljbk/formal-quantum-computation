@@ -17,15 +17,6 @@ struct AlarmEditorView: View {
         originalTime = t
     }
 
-    private var missionKind: Binding<MissionKind> {
-        Binding(
-            get: { alarm.mission.kind },
-            set: { kind in
-                alarm.mission.kind = kind
-                alarm.mission.rounds = kind.defaultRounds
-            })
-    }
-
     var body: some View {
         NavigationStack {
             Form {
@@ -64,30 +55,44 @@ struct AlarmEditorView: View {
                 }
 
                 Section {
-                    Picker("Mission", selection: missionKind) {
-                        ForEach(MissionKind.allCases) { kind in
-                            Label(kind.title, systemImage: kind.symbolName).tag(kind)
+                    ForEach($alarm.missions) { $mission in
+                        NavigationLink {
+                            MissionEditorView(mission: $mission)
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: mission.kind.symbolName)
+                                    .frame(width: 28)
+                                    .foregroundColor(Theme.lilac)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(mission.kind.title)
+                                    Text(mission.isReady ? mission.kind.roundsLabel(mission.rounds) : "Needs setup: tap to register")
+                                        .font(.caption)
+                                        .foregroundColor(mission.isReady ? .secondary : .orange)
+                                }
+                            }
                         }
                     }
-                    if alarm.mission.kind == .math {
-                        Picker("Difficulty", selection: $alarm.mission.difficulty) {
-                            ForEach(MathDifficulty.allCases) { d in Text(d.title).tag(d) }
-                        }
-                        .pickerStyle(.segmented)
-                    }
-                    if alarm.mission.kind != .none {
-                        Stepper(value: $alarm.mission.rounds,
-                                in: alarm.mission.kind.roundsRange,
-                                step: alarm.mission.kind.roundsStep) {
-                            Text(alarm.mission.kind.roundsLabel(alarm.mission.rounds))
+                    .onDelete { alarm.missions.remove(atOffsets: $0) }
+                    .onMove { alarm.missions.move(fromOffsets: $0, toOffset: $1) }
+                    if alarm.missions.count < Alarm.maxMissions {
+                        Menu {
+                            ForEach(MissionKind.selectable) { kind in
+                                Button {
+                                    alarm.missions.append(MissionSettings(kind: kind))
+                                } label: {
+                                    Label(kind.title, systemImage: kind.symbolName)
+                                }
+                            }
+                        } label: {
+                            Label("Add mission", systemImage: "plus.circle.fill")
                         }
                     }
                 } header: {
-                    Text("Wake-up mission")
+                    Text("Wake-up missions")
                 } footer: {
-                    Text(alarm.mission.kind == .none
+                    Text(alarm.missions.isEmpty
                          ? "Without a mission, one tap stops the crying."
-                         : "The baby keeps crying until you finish the mission.")
+                         : "The baby keeps crying until every mission is done, in this order (up to \(Alarm.maxMissions)). Swipe to remove.")
                 }
 
                 Section("Snooze") {
@@ -116,6 +121,14 @@ struct AlarmEditorView: View {
                         }
                     }
                     Toggle("Vibrate", isOn: $alarm.vibrate)
+                    Toggle(isOn: $alarm.cryEscalation) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Fussier over time")
+                            Text("Every \(Int(CryEscalation.stageSeconds)) s a more upset baby takes over")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
 
                 Section {

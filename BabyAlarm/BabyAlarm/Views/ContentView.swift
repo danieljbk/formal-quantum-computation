@@ -20,81 +20,11 @@ struct EditorTarget: Identifiable {
     var id: UUID { alarm.id }
 }
 
-struct ContentView: View {
-    @EnvironmentObject private var engine: AlarmEngine
-    @State private var editor: EditorTarget?
-    @State private var showQuick = false
-
-    var body: some View {
-        NavigationStack {
-            List {
-                Section {
-                    NextAlarmHeader()
-                        .listRowInsets(EdgeInsets())
-                }
-
-                if engine.notificationStatus == .denied {
-                    Section {
-                        Label {
-                            Text("Notifications are off, so alarms can only ring while the app is open. Turn them on in Settings.")
-                                .font(.subheadline)
-                        } icon: {
-                            Image(systemName: "bell.slash.fill").foregroundColor(.orange)
-                        }
-                    }
-                }
-
-                Section("Alarms") {
-                    if engine.alarms.isEmpty {
-                        Text("No alarms yet. Tap + to add one.")
-                            .foregroundColor(.secondary)
-                    }
-                    ForEach(engine.alarms) { alarm in
-                        AlarmRow(alarm: alarm) { enabled in
-                            engine.setEnabled(enabled, id: alarm.id)
-                        }
-                        .contentShape(Rectangle())
-                        .onTapGesture { editor = EditorTarget(alarm: alarm, isNew: false) }
-                    }
-                    .onDelete { offsets in
-                        let ids = offsets.map { engine.alarms[$0].id }
-                        ids.forEach { engine.delete(id: $0) }
-                    }
-                }
-            }
-            .navigationTitle("Baby Alarm")
-            .toolbar {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Button { showQuick = true } label: { Image(systemName: "bolt.fill") }
-                        .accessibilityLabel("Quick alarm")
-                    Button {
-                        var fresh = Alarm()
-                        fresh.voiceID = engine.defaultVoiceID
-                        let c = Calendar.current.dateComponents([.hour, .minute], from: Date().addingTimeInterval(8 * 3600))
-                        fresh.hour = c.hour ?? 7
-                        fresh.minute = c.minute ?? 0
-                        editor = EditorTarget(alarm: fresh, isNew: true)
-                    } label: { Image(systemName: "plus") }
-                        .accessibilityLabel("Add alarm")
-                }
-            }
-            .sheet(item: $editor) { target in
-                AlarmEditorView(alarm: target.alarm, isNew: target.isNew)
-                    .environmentObject(engine)
-            }
-            .sheet(isPresented: $showQuick) {
-                QuickAlarmView()
-                    .environmentObject(engine)
-                    .presentationDetents([.medium, .large])
-            }
-        }
-    }
-}
-
-/// App root: tabs for alarms, baby voices and settings, with ringing and
-/// wake-up checks presented full screen above every tab.
+/// App root: five tabs, with ringing and wake-up checks presented full screen above all of them.
 struct RootView: View {
     @EnvironmentObject private var engine: AlarmEngine
+    @StateObject private var settings = AppSettingsStore.shared
+    @StateObject private var sleep = SleepService.shared
 
     private var interruption: Binding<Interruption?> {
         Binding(
@@ -109,13 +39,20 @@ struct RootView: View {
     var body: some View {
         TabView {
             ContentView()
-                .tabItem { Label("Alarms", systemImage: "alarm.fill") }
-            VoiceGalleryView()
-                .tabItem { Label("Babies", systemImage: "waveform") }
+                .tabItem { Label("Alarm", systemImage: "alarm.fill") }
+            SleepView()
+                .tabItem { Label("Sleep", systemImage: "moon.zzz.fill") }
+            MorningView()
+                .tabItem { Label("Morning", systemImage: "sun.horizon.fill") }
+            InsightsView()
+                .tabItem { Label("Record", systemImage: "chart.bar.fill") }
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape.fill") }
         }
+        .environmentObject(settings)
+        .environmentObject(sleep)
         .tint(Theme.lilac)
+        .preferredColorScheme(settings.prefs.theme.colorScheme)
         .fullScreenCover(item: interruption) { item in
             switch item {
             case .ringing(let session):
@@ -124,6 +61,142 @@ struct RootView: View {
                 WakeCheckView(check: check).environmentObject(engine)
             }
         }
+        .sheet(isPresented: $engine.showBriefing) {
+            NavigationStack {
+                BriefingContent(showsHeader: true)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Start my day") { engine.showBriefing = false }
+                        }
+                    }
+            }
+            .environmentObject(settings)
+            .environmentObject(engine)
+            .environmentObject(sleep)
+        }
+    }
+}
+
+/// Alarm tab: next-alarm header, the alarm list, and a floating add button.
+struct ContentView: View {
+    @EnvironmentObject private var engine: AlarmEngine
+    @EnvironmentObject private var settings: AppSettingsStore
+    @State private var editor: EditorTarget?
+    @State private var showQuick = false
+
+    var body: some View {
+        NavigationStack {
+            ZStack(alignment: .bottomTrailing) {
+                List {
+                    Section {
+                        NextAlarmHeader()
+                            .listRowInsets(EdgeInsets())
+                    }
+
+                    if engine.notificationStatus == .denied {
+                        Section {
+                            Label {
+                                Text("Notifications are off, so alarms can only ring while the app is open. Turn them on in Settings.")
+                                    .font(.subheadline)
+                            } icon: {
+                                Image(systemName: "bell.slash.fill").foregroundColor(.orange)
+                            }
+                        }
+                    }
+
+                    Section {
+                        if engine.alarms.isEmpty {
+                            Text("No alarms yet. Tap + to add one.")
+                                .foregroundColor(.secondary)
+                        }
+                        ForEach(engine.alarms) { alarm in
+                            AlarmRow(alarm: alarm) { enabled in
+                                engine.setEnabled(enabled, id: alarm.id)
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture { editor = EditorTarget(alarm: alarm, isNew: false) }
+                            .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                Button(role: .destructive) {
+                                    engine.delete(id: alarm.id)
+                                } label: { Label("Delete", systemImage: "trash") }
+                                Button {
+                                    editor = EditorTarget(alarm: alarm, isNew: false)
+                                } label: { Label("Edit", systemImage: "pencil") }
+                                    .tint(Theme.lilac)
+                            }
+                            .swipeActions(edge: .leading) {
+                                Button {
+                                    engine.duplicate(id: alarm.id)
+                                } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
+                                    .tint(.teal)
+                                if !alarm.repeatDays.isEmpty && alarm.isEnabled {
+                                    if alarm.skippedOccurrence == nil {
+                                        Button {
+                                            engine.skipNext(id: alarm.id)
+                                        } label: { Label("Skip next", systemImage: "forward.end") }
+                                            .tint(.orange)
+                                    } else {
+                                        Button {
+                                            engine.clearSkip(id: alarm.id)
+                                        } label: { Label("Don't skip", systemImage: "arrow.uturn.backward") }
+                                            .tint(.orange)
+                                    }
+                                }
+                            }
+                            .contextMenu {
+                                Button { editor = EditorTarget(alarm: alarm, isNew: false) } label: { Label("Edit", systemImage: "pencil") }
+                                Button { engine.duplicate(id: alarm.id) } label: { Label("Duplicate", systemImage: "plus.square.on.square") }
+                                Button(role: .destructive) { engine.delete(id: alarm.id) } label: { Label("Delete", systemImage: "trash") }
+                            }
+                        }
+                    } header: {
+                        Text("Alarms")
+                    } footer: {
+                        Text("Swipe right to duplicate or skip the next ring, left to edit or delete.")
+                    }
+                }
+                .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 72) }
+
+                Button(action: newAlarm) {
+                    Image(systemName: "plus")
+                        .font(.title2.weight(.bold))
+                        .foregroundColor(.white)
+                        .frame(width: 60, height: 60)
+                        .background(Theme.headerGradient)
+                        .clipShape(Circle())
+                        .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
+                }
+                .accessibilityLabel("Add alarm")
+                .padding(.trailing, 20)
+                .padding(.bottom, 16)
+            }
+            .navigationTitle("Baby Alarm")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showQuick = true } label: { Label("Quick alarm", systemImage: "bolt.fill") }
+                }
+            }
+            .sheet(item: $editor) { target in
+                AlarmEditorView(alarm: target.alarm, isNew: target.isNew)
+                    .environmentObject(engine)
+                    .environmentObject(settings)
+            }
+            .sheet(isPresented: $showQuick) {
+                QuickAlarmView()
+                    .environmentObject(engine)
+                    .presentationDetents([.medium, .large])
+            }
+        }
+    }
+
+    private func newAlarm() {
+        var fresh = Alarm()
+        fresh.voiceID = engine.defaultVoiceID
+        fresh.missions = settings.prefs.defaultMissions.map { var m = $0; m.id = UUID(); return m }
+        let c = Calendar.current.dateComponents([.hour, .minute], from: Date().addingTimeInterval(8 * 3600))
+        fresh.hour = c.hour ?? 7
+        fresh.minute = c.minute ?? 0
+        editor = EditorTarget(alarm: fresh, isNew: true)
     }
 }
 
@@ -177,10 +250,15 @@ struct AlarmRow: View {
                     .monospacedDigit()
                 Text("\(alarm.displayLabel) · \(alarm.oneShotDate == nil ? AlarmSchedule.repeatSummary(alarm.repeatDays) : "Once")")
                     .font(.subheadline)
+                if let skipped = alarm.skippedOccurrence, skipped > Date() {
+                    Label("Skipping \(skipped.formatted(.dateTime.weekday(.wide)))", systemImage: "forward.end.fill")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.orange)
+                }
                 HStack(spacing: 12) {
                     Label(BabyVoiceCatalog.displayName(for: alarm.voiceID), systemImage: "waveform")
-                    if alarm.mission.kind != .none {
-                        Label(alarm.mission.kind.title, systemImage: alarm.mission.kind.symbolName)
+                    if !alarm.activeMissions.isEmpty {
+                        Label(alarm.missionSummary, systemImage: alarm.activeMissions[0].kind.symbolName)
                     }
                     if alarm.wakeUpCheck.isEnabled {
                         Label("Check", systemImage: "checkmark.seal")

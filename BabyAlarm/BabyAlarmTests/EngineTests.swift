@@ -145,7 +145,7 @@ final class EngineTests: XCTestCase {
         var state = AlarmRepository.starterState(now: T.date("2026-11-25 00:00"))
         var a = T.alarm(5, 45, repeats: [.monday])
         a.voiceID = BabyVoiceCatalog.randomID
-        a.mission = MissionSettings(kind: .shake, difficulty: .hard, rounds: 40)
+        a.missions = [MissionSettings(kind: .shake, difficulty: .hard, rounds: 40), MissionSettings(kind: .barcode, barcodePayload: "4006381333931")]
         state.alarms.append(a)
         state.pending = [PendingEvent(key: OccurrenceKey(alarmID: a.id, occurrence: T.date("2026-11-30 05:45")),
                                       fireDate: T.date("2026-11-30 05:50"), kind: .snooze(count: 1))]

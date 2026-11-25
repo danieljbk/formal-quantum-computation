@@ -24,6 +24,14 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>The photo and barcode wake-up missions use the camera to check you got out of bed.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your approximate location is used to show local weather in the morning briefing.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sleep tracking records snoring and sleep talk overnight. Recordings stay on your phone.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>The steps wake-up mission counts your steps to make sure you are up.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

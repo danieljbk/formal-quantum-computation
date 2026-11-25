@@ -1,0 +1,53 @@
+{
+  "note": "Sleep sounds: real field recordings from Wikimedia Commons (public domain / CC0). sourceSHA1 is Commons' published SHA-1 of the original (checked at fetch time); sha256 is the bundled loop's digest (checked by unit tests). Conversion: ffmpeg loudnorm I=-24, 1.5 s fades, mono 44.1 kHz AAC 64 kb/s, at most 180 s.",
+  "sounds": [
+    {
+      "id": "sleep_rain",
+      "file": "sleep_rain.m4a",
+      "title": "Rain against the window",
+      "author": "cori (pdsounds.org #600)",
+      "license": "Public domain",
+      "licenseURL": "https://commons.wikimedia.org/wiki/File:Rain_against_the_window.ogg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Rain_against_the_window.ogg",
+      "sourceFile": "https://upload.wikimedia.org/wikipedia/commons/4/41/Rain_against_the_window.ogg",
+      "sourceSHA1": "9d37ead83781913c95c026559a9ea3490c765d72",
+      "sha256": "a021111458809bddd08424e535f8498df71e8408696ef8fb8ef180a48b311c23"
+    },
+    {
+      "id": "sleep_thunder",
+      "file": "sleep_thunder.m4a",
+      "title": "Rain and thunder",
+      "author": "ezwa (pdsounds.org #683)",
+      "license": "Public domain",
+      "licenseURL": "https://commons.wikimedia.org/wiki/File:Rain_and_thunder_(1).ogg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Rain_and_thunder_(1).ogg",
+      "sourceFile": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Rain_and_thunder_%281%29.ogg",
+      "sourceSHA1": "ad98b084834bc479e118e40ce3643103f314ee84",
+      "sha256": "1d7080b1d0c4d0d41717e645b1c9542ba6443b28e40c460c804f321163c38ed6"
+    },
+    {
+      "id": "sleep_ocean",
+      "file": "sleep_ocean.m4a",
+      "title": "Ocean Waves on a Tropical Beach",
+      "author": "Jarrod Stanley",
+      "license": "CC0 1.0",
+      "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Ocean_Waves_on_a_Tropical_Beach.ogg",
+      "sourceFile": "https://upload.wikimedia.org/wikipedia/commons/6/64/Ocean_Waves_on_a_Tropical_Beach.ogg",
+      "sourceSHA1": "22b9faaa8c718fa1596d8f41d221906623bebd5a",
+      "sha256": "d3d3aad8564b2155c2da7689b95cc910db58b8d2a21ebc7db2c9ad7984934bab"
+    },
+    {
+      "id": "sleep_river",
+      "file": "sleep_river.m4a",
+      "title": "Georgia Rapids",
+      "author": "Jarrod Stanley",
+      "license": "CC0 1.0",
+      "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Georgia_Rapids.ogg",
+      "sourceFile": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Georgia_Rapids.ogg",
+      "sourceSHA1": "00c388f75e0ab0522b635901e338bb95701623a8",
+      "sha256": "a65bbd454ad174300f0b13ad50580942e1b54554af5a01848fcf7d7a7bd38da3"
+    }
+  ]
+}

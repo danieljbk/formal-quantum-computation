@@ -77,6 +77,28 @@ final class BundledSoundTests: XCTestCase {
         XCTAssertEqual(engine.defaultVoiceID, BabyVoiceCatalog.randomID)
     }
 
+    func testSleepSoundsAreBundledWithProvenance() throws {
+        let m = try XCTUnwrap(SoundManifest.load(from: bundle, named: "sleep_sounds"))
+        XCTAssertEqual(Set(m.sounds.map(\.id)), Set(SleepSoundCatalog.all.map(\.id)))
+        for s in m.sounds {
+            XCTAssertTrue(s.sourceFile.hasPrefix("https://upload.wikimedia.org/"), s.sourceFile)
+            XCTAssertEqual(s.sourceSHA1.count, 40)
+            let url = try XCTUnwrap(bundle.url(forResource: s.id, withExtension: SleepSound.fileExtension), "\(s.file) missing")
+            let digest = SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
+            XCTAssertEqual(digest, s.sha256, s.file)
+            let file = try AVAudioFile(forReading: url)
+            XCTAssertGreaterThan(Double(file.length) / file.processingFormat.sampleRate, 30, s.id)
+        }
+    }
+
+    func testPrivacyStringsForEveryPermission() {
+        for key in ["NSCameraUsageDescription", "NSMicrophoneUsageDescription", "NSMotionUsageDescription",
+                    "NSLocationWhenInUseUsageDescription"] {
+            let text = bundle.object(forInfoDictionaryKey: key) as? String
+            XCTAssertFalse((text ?? "").isEmpty, key)
+        }
+    }
+
     func testAppInfoPlistDeclaresBackgroundAudio() {
         let modes = Bundle(for: AlarmEngine.self).object(forInfoDictionaryKey: "UIBackgroundModes") as? [String]
         XCTAssertEqual(modes, ["audio"])

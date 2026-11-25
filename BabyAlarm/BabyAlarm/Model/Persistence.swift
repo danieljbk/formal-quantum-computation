@@ -57,8 +57,8 @@ struct SoundManifest: Codable, Equatable {
     let note: String
     let sounds: [SoundSource]
 
-    static func load(from bundle: Bundle) -> SoundManifest? {
-        guard let url = bundle.url(forResource: "sounds", withExtension: "json"),
+    static func load(from bundle: Bundle, named name: String = "sounds") -> SoundManifest? {
+        guard let url = bundle.url(forResource: name, withExtension: "json"),
               let data = try? Data(contentsOf: url) else { return nil }
         return try? JSONDecoder().decode(SoundManifest.self, from: data)
     }

@@ -29,6 +29,10 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
+        NSCameraUsageDescription: The photo and barcode wake-up missions use the camera to check you got out of bed.
+        NSMicrophoneUsageDescription: Sleep tracking records snoring and sleep talk overnight. Recordings stay on your phone.
+        NSMotionUsageDescription: The steps wake-up mission counts your steps to make sure you are up.
+        NSLocationWhenInUseUsageDescription: Your approximate location is used to show local weather in the morning briefing.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: app.babyalarm.BabyAlarm
