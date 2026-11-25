@@ -1,0 +1,97 @@
+{
+  "fetchedAt": "2026-11-25T17:22:00Z",
+  "channel": "openNetworkFetch",
+  "repository": "Wikimedia Commons (https://commons.wikimedia.org)",
+  "transform": "ffmpeg: strip metadata, loudnorm I=-14 LUFS TP=-1.5 dB, 44.1 kHz mono, MP3 128 kbps (no other edits; the recording itself is unchanged)",
+  "reproduce": "scripts/fetch-sounds.sh",
+  "sounds": [
+    {
+      "id": "newborn",
+      "file": "sounds/newborn.mp3",
+      "sha256": "4bc5ae8c74392de036bb0c69e57514360ec077a2aa27b9d3cf650b5df6ad30ef",
+      "durationSec": 23.1,
+      "origin": "authenticRecorded",
+      "source": {
+        "title": "File:Crying newborn baby.ogg",
+        "page": "https://commons.wikimedia.org/wiki/File:Crying_newborn_baby.ogg",
+        "download": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Crying_newborn_baby.ogg",
+        "sha1": "16f95806c6425912c808ee52300a14502f862ce9",
+        "bytes": 510174,
+        "format": "Ogg Vorbis, 44.1 kHz stereo",
+        "recorded": "2013-12-22",
+        "upstream": "Freesound: \"Crying newborn baby child 2.WAV\""
+      },
+      "author": "the_yura",
+      "license": "CC0 1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "attributionRequired": false,
+      "licenseStatus": "verifiedRedistributable"
+    },
+    {
+      "id": "hungry",
+      "file": "sounds/hungry.mp3",
+      "sha256": "4e3884cafa15b8642ef746fc6528b312d4ed85996da713805ede0bdf37d4448b",
+      "durationSec": 18.5,
+      "origin": "authenticRecorded",
+      "source": {
+        "title": "File:Baby long wanting cry.ogg",
+        "page": "https://commons.wikimedia.org/wiki/File:Baby_long_wanting_cry.ogg",
+        "download": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Baby_long_wanting_cry.ogg",
+        "sha1": "c5b0bf176dea3e7b81495af06a8d92d8521575ab",
+        "bytes": 503180,
+        "format": "Ogg Vorbis, 44.1 kHz stereo",
+        "recorded": "2007-04-25",
+        "upstream": "PDSounds record 185"
+      },
+      "author": "natalie",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Baby_long_wanting_cry.ogg",
+      "attributionRequired": false,
+      "licenseStatus": "verifiedRedistributable"
+    },
+    {
+      "id": "fussy",
+      "file": "sounds/fussy.mp3",
+      "sha256": "4905739f0d705d9ec2b1ca186fd14d171edfbbac1047e8bab55b358d4dcd5041",
+      "durationSec": 48.4,
+      "origin": "authenticRecorded",
+      "source": {
+        "title": "File:Babys disappointed crying.oga",
+        "page": "https://commons.wikimedia.org/wiki/File:Babys_disappointed_crying.oga",
+        "download": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Babys_disappointed_crying.oga",
+        "sha1": "7b80bd9ad40ad6a72844b2ef3d4231f4d3a660da",
+        "bytes": 1271250,
+        "format": "Ogg Vorbis, 44.1 kHz stereo",
+        "recorded": "2007-04-25",
+        "upstream": "PDSounds record 184"
+      },
+      "author": "natalie",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Babys_disappointed_crying.oga",
+      "attributionRequired": false,
+      "licenseStatus": "verifiedRedistributable"
+    },
+    {
+      "id": "kunjappi",
+      "file": "sounds/kunjappi.mp3",
+      "sha256": "e6a644514318b11f2606cf47b7b6bd7acc56f31bca6f9bb4bcd855e720035039",
+      "durationSec": 54.0,
+      "origin": "authenticRecorded",
+      "source": {
+        "title": "File:Newborn baby crying sounds 20190831 061900.wav",
+        "page": "https://commons.wikimedia.org/wiki/File:Newborn_baby_crying_sounds_20190831_061900.wav",
+        "download": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Newborn_baby_crying_sounds_20190831_061900.wav",
+        "sha1": "369e5e6bbde178cec389aaf78e4a4b0804ce29c7",
+        "bytes": 5183640,
+        "format": "WAV PCM 16-bit, 48 kHz mono",
+        "recorded": "2019-08-25",
+        "upstream": "Own work of the author"
+      },
+      "author": "Manoj Karingamadathil",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "attributionRequired": true,
+      "licenseStatus": "verifiedRedistributable"
+    }
+  ]
+}
