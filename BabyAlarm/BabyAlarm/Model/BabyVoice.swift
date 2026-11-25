@@ -7,7 +7,10 @@ struct BabyVoice: Identifiable, Hashable {
     let blurb: String
     let emoji: String
 
-    var fileName: String { id + ".caf" }
+    /// Core Audio Format: the container iOS accepts for custom notification sounds.
+    static let fileExtension = "caf"
+
+    var fileName: String { "\(id).\(Self.fileExtension)" }
 }
 
 enum BabyVoiceCatalog {

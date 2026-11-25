@@ -29,7 +29,7 @@ final class BundledSoundTests: XCTestCase {
 
     func testBundledClipsMatchRecordedDigests() throws {
         for s in try manifest().sounds {
-            let url = try XCTUnwrap(bundle.url(forResource: s.id, withExtension: "caf"), "\(s.file) missing from app bundle")
+            let url = try XCTUnwrap(bundle.url(forResource: s.id, withExtension: BabyVoice.fileExtension), "\(s.file) missing from app bundle")
             let digest = SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
             XCTAssertEqual(digest, s.sha256, s.file)
         }
@@ -56,7 +56,7 @@ final class BundledSoundTests: XCTestCase {
         XCTAssertFalse(plan.isEmpty)
         for item in plan {
             let base = (item.soundFile as NSString).deletingPathExtension
-            XCTAssertNotNil(bundle.url(forResource: base, withExtension: "caf"), item.soundFile)
+            XCTAssertNotNil(bundle.url(forResource: base, withExtension: BabyVoice.fileExtension), item.soundFile)
         }
     }
 

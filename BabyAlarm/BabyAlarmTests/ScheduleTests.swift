@@ -82,7 +82,8 @@ final class ScheduleTests: XCTestCase {
         XCTAssertEqual(Set(BabyVoiceCatalog.all.map(\.id)).count, BabyVoiceCatalog.all.count)
         for v in BabyVoiceCatalog.all {
             XCTAssertTrue(v.id.hasPrefix("cry_"))
-            XCTAssertTrue(v.fileName.hasSuffix(".caf"))
+            XCTAssertEqual((v.fileName as NSString).pathExtension, BabyVoice.fileExtension)
+            XCTAssertEqual((v.fileName as NSString).deletingPathExtension, v.id)
         }
         XCTAssertEqual(Alarm().voiceID, BabyVoiceCatalog.defaultVoice.id)
     }

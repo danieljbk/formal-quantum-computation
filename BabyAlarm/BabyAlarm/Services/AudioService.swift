@@ -33,7 +33,7 @@ final class AudioService {
     var isRinging: Bool { player != nil }
 
     static func url(for voice: BabyVoice, in bundle: Bundle = .main) -> URL? {
-        bundle.url(forResource: voice.id, withExtension: "caf")
+        bundle.url(forResource: voice.id, withExtension: BabyVoice.fileExtension)
     }
 
     // MARK: Ringing
