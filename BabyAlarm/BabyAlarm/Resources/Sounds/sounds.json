@@ -1,0 +1,53 @@
+{
+  "note": "Each bundled clip is derived from an authentic field recording fetched from Wikimedia Commons. sourceSHA1 is the SHA-1 Wikimedia publishes for the original upload (checked at fetch time); sha256 is the digest of the bundled, converted clip (checked by the unit tests). Conversion: ffmpeg loudnorm I=-14, 150 ms fade-in, 600 ms fade-out, mono 22.05 kHz 16-bit PCM CAF, truncated to <= 29 s so iOS accepts it as a notification sound.",
+  "sounds": [
+    {
+      "id": "cry_newborn",
+      "file": "cry_newborn.caf",
+      "title": "Crying newborn baby",
+      "author": "the_yura (via Freesound #211528)",
+      "license": "CC0 1.0",
+      "licenseURL": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Crying_newborn_baby.ogg",
+      "sourceFile": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Crying_newborn_baby.ogg",
+      "sourceSHA1": "16f95806c6425912c808ee52300a14502f862ce9",
+      "sha256": "6571016aaaea4f102a8260c8d42dde9086370409a0b732245d7e2859692eb34b"
+    },
+    {
+      "id": "cry_fussy",
+      "file": "cry_fussy.caf",
+      "title": "Baby's disappointed crying",
+      "author": "natalie (pdsounds.org #184)",
+      "license": "Public domain",
+      "licenseURL": "https://commons.wikimedia.org/wiki/File:Babys_disappointed_crying.oga",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Babys_disappointed_crying.oga",
+      "sourceFile": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Babys_disappointed_crying.oga",
+      "sourceSHA1": "7b80bd9ad40ad6a72844b2ef3d4231f4d3a660da",
+      "sha256": "dd40d1b14dcf9e801a3b89a212be0cc38cdc3c9514a982c80d0c31473d2f49d3"
+    },
+    {
+      "id": "cry_hungry",
+      "file": "cry_hungry.caf",
+      "title": "Baby long wanting cry",
+      "author": "natalie (pdsounds.org #185)",
+      "license": "Public domain",
+      "licenseURL": "https://commons.wikimedia.org/wiki/File:Baby_long_wanting_cry.ogg",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Baby_long_wanting_cry.ogg",
+      "sourceFile": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Baby_long_wanting_cry.ogg",
+      "sourceSHA1": "c5b0bf176dea3e7b81495af06a8d92d8521575ab",
+      "sha256": "786948cc5f32a1de75727b6db8bc1f76515847676d3e004c9d9af2fa8a88963d"
+    },
+    {
+      "id": "cry_nursery",
+      "file": "cry_nursery.caf",
+      "title": "Newborn baby crying sounds (2019-08-31)",
+      "author": "Manoj Karingamadathil",
+      "license": "CC BY-SA 4.0",
+      "licenseURL": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "sourcePage": "https://commons.wikimedia.org/wiki/File:Newborn_baby_crying_sounds_20190831_061900.wav",
+      "sourceFile": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Newborn_baby_crying_sounds_20190831_061900.wav",
+      "sourceSHA1": "369e5e6bbde178cec389aaf78e4a4b0804ce29c7",
+      "sha256": "50a9e4ed5df8042856a0c0f92dec2fc481c2334731b64e49fec97e9f68d512d6"
+    }
+  ]
+}

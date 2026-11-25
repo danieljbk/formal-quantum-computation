@@ -1,0 +1,64 @@
+name: BabyAlarm
+options:
+  bundleIdPrefix: app.babyalarm
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+targets:
+  BabyAlarm:
+    type: application
+    platform: iOS
+    sources:
+      - path: BabyAlarm
+    info:
+      path: Config/Info.plist
+      properties:
+        CFBundleDisplayName: Baby Alarm
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UIApplicationSupportsIndirectInputEvents: true
+        UIBackgroundModes:
+          - audio
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        ITSAppUsesNonExemptEncryption: false
+        NSAlarmKitUsageDescription: Lets your baby alarms ring like the Clock app, even in Silent mode or when the app is closed.
+        NSCameraUsageDescription: The photo and barcode wake-up missions use the camera to check you got out of bed.
+        NSMicrophoneUsageDescription: Sleep tracking records snoring and sleep talk overnight. Recordings stay on your phone.
+        NSMotionUsageDescription: The steps wake-up mission counts your steps to make sure you are up.
+        NSLocationWhenInUseUsageDescription: Your approximate location is used to show local weather in the morning briefing.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.babyalarm.BabyAlarm
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_PREVIEWS: YES
+  BabyAlarmTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: BabyAlarmTests
+    dependencies:
+      - target: BabyAlarm
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.babyalarm.BabyAlarmTests
+schemes:
+  BabyAlarm:
+    build:
+      targets:
+        BabyAlarm: all
+        BabyAlarmTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - BabyAlarmTests
