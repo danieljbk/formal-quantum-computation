@@ -1,0 +1,82 @@
+[
+  {
+    "id": "newborn",
+    "name": "Newborn",
+    "persona": "Fresh out of the hospital, small but relentless.",
+    "file": "sounds/newborn.mp3",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Crying_newborn_baby.ogg",
+    "pageUrl": "https://commons.wikimedia.org/wiki/File:Crying_newborn_baby.ogg",
+    "author": "the_yura (via Freesound)",
+    "license": "CC0 1.0"
+  },
+  {
+    "id": "hungry",
+    "name": "Hungry Boy",
+    "persona": "Waiting in the drive-through. Patience: zero.",
+    "file": "sounds/hungry.mp3",
+    "sourceUrl": "https://soundbible.com/mp3/Baby%20Crying-SoundBible.com-1143552027.mp3",
+    "pageUrl": "https://soundbible.com/557-Baby-Crying.html",
+    "author": "Mike Koenig",
+    "license": "CC BY 3.0"
+  },
+  {
+    "id": "first-cry",
+    "name": "First Cry",
+    "persona": "Literally just born and already disappointed in you.",
+    "file": "sounds/first-cry.mp3",
+    "sourceUrl": "https://soundbible.com/mp3/just_born_baby-daniel_simon.mp3",
+    "pageUrl": "https://soundbible.com/2130-Baby-Just-Born.html",
+    "author": "Daniel Simon",
+    "license": "CC BY 3.0"
+  },
+  {
+    "id": "toddler",
+    "name": "Raisin Crisis",
+    "persona": "A toddler whose raisins were served outside the box.",
+    "file": "sounds/toddler.mp3",
+    "sourceUrl": "https://archive.org/download/toddler-crying-d.-d.-teoli-jr/Toddler%20Crying%20D.D.Teoli%20Jr.mp3",
+    "pageUrl": "https://archive.org/details/toddler-crying-d.-d.-teoli-jr",
+    "author": "Daniel D. Teoli Jr.",
+    "license": "Public Domain Mark 1.0"
+  },
+  {
+    "id": "marathon",
+    "name": "Marathon Crier",
+    "persona": "Nearly a full minute of uninterrupted grievance.",
+    "file": "sounds/marathon.mp3",
+    "sourceUrl": "https://archive.org/download/BabyCryNew/Baby%20Cry%20New.mp3",
+    "pageUrl": "https://archive.org/details/BabyCryNew",
+    "author": "Jamma Jatta (Internet Archive uploader)",
+    "license": "Public Domain Mark 1.0"
+  },
+  {
+    "id": "disappointed",
+    "name": "Disappointed",
+    "persona": "Not angry. Just disappointed. Loudly.",
+    "file": "sounds/disappointed.mp3",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dc/Babys_disappointed_crying.oga",
+    "pageUrl": "https://commons.wikimedia.org/wiki/File:Babys_disappointed_crying.oga",
+    "author": "natalie (PDsounds)",
+    "license": "Public domain"
+  },
+  {
+    "id": "wanting",
+    "name": "Long Wanting",
+    "persona": "Wants something. Will not say what. Will not stop.",
+    "file": "sounds/wanting.mp3",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Baby_long_wanting_cry.ogg",
+    "pageUrl": "https://commons.wikimedia.org/wiki/File:Baby_long_wanting_cry.ogg",
+    "author": "natalie (PDsounds)",
+    "license": "Public domain"
+  },
+  {
+    "id": "dawn",
+    "name": "6:19 AM Special",
+    "persona": "Recorded at dawn, by someone who knows your pain.",
+    "file": "sounds/dawn.mp3",
+    "sourceUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f7/Newborn_baby_crying_sounds_20190831_061900.wav",
+    "pageUrl": "https://commons.wikimedia.org/wiki/File:Newborn_baby_crying_sounds_20190831_061900.wav",
+    "author": "Manoj Karingamadathil",
+    "license": "CC BY-SA 4.0"
+  }
+]
