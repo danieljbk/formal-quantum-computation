@@ -1,0 +1,66 @@
+{
+  "comment": "Recorded baby-cry sources for Cry Wake. Every entry is fetched over the network by fetch_cry_voices.py, its license is re-verified against the live source page, and it is processed in three stages (fetch -> condition -> encode). Only licenses in allowed_licenses are accepted.",
+  "allowed_licenses": {
+    "CC0 1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "max_seconds": 25,
+  "voices": [
+    {
+      "id": "newborn_girl",
+      "name": "Newborn Girl",
+      "subtitle": "3 weeks old, steady newborn wail",
+      "provider": "freesound",
+      "page_url": "https://freesound.org/people/josephvm/sounds/442655/",
+      "audio_url": "https://cdn.freesound.org/previews/442/442655_6940680-hq.mp3",
+      "author": "josephvm",
+      "title": "baby girl crying",
+      "expected_license": "CC0 1.0"
+    },
+    {
+      "id": "two_month_loud",
+      "name": "Two-Month-Old",
+      "subtitle": "Loud, close-up binaural recording",
+      "provider": "freesound",
+      "page_url": "https://freesound.org/people/eguaus/sounds/321712/",
+      "audio_url": "https://cdn.freesound.org/previews/321/321712_40875-hq.mp3",
+      "author": "eguaus",
+      "title": "baby crying",
+      "expected_license": "CC0 1.0"
+    },
+    {
+      "id": "big_fuss",
+      "name": "Big Fuss",
+      "subtitle": "Baby working up a big fuss",
+      "provider": "freesound",
+      "page_url": "https://freesound.org/people/PickleJones/sounds/151085/",
+      "audio_url": "https://cdn.freesound.org/previews/151/151085_2661659-hq.mp3",
+      "author": "PickleJones",
+      "title": "01 baby crying hard.wav",
+      "expected_license": "CC0 1.0"
+    },
+    {
+      "id": "whiny_boy",
+      "name": "Whiny Baby Boy",
+      "subtitle": "Starts whining, ends in tears",
+      "provider": "freesound",
+      "page_url": "https://freesound.org/people/jamesmbock/sounds/458646/",
+      "audio_url": "https://cdn.freesound.org/previews/458/458646_6996390-hq.mp3",
+      "author": "jamesmbock",
+      "title": "babycry.mp3",
+      "expected_license": "CC0 1.0"
+    },
+    {
+      "id": "kunjappi_newborn",
+      "name": "Kunjappi",
+      "subtitle": "Newborn, recorded at home",
+      "provider": "wikimedia",
+      "page_url": "https://commons.wikimedia.org/wiki/File:Newborn_baby_crying_sounds_20190831_061900.wav",
+      "file_title": "File:Newborn baby crying sounds 20190831 061900.wav",
+      "author": "Manoj Karingamadathil",
+      "title": "Newborn baby crying sounds 20190831 061900.wav",
+      "expected_license": "CC BY-SA 4.0",
+      "optional": true
+    }
+  ]
+}

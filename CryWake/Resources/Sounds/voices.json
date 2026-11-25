@@ -1,0 +1,169 @@
+{
+  "generated_by": "tools/fetch_cry_voices.py",
+  "voices": [
+    {
+      "id": "newborn_girl",
+      "name": "Newborn Girl",
+      "subtitle": "3 weeks old, steady newborn wail",
+      "file": "cry_newborn_girl.caf",
+      "author": "josephvm",
+      "source_title": "baby girl crying",
+      "source_page": "https://freesound.org/people/josephvm/sounds/442655/",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "provenance": {
+        "retrieved_at": "2026-11-25T18:34:52+00:00",
+        "origin": "recorded",
+        "stages": {
+          "fetch": {
+            "audio_url": "https://cdn.freesound.org/previews/442/442655_6940680-hq.mp3",
+            "source_sha1": null,
+            "raw_sha256": "08c32c9d7f25007ca3d57bc5baf0c62b11ff1b35babcfc92cdbb01d5c27a0c41",
+            "raw_bytes": 701640
+          },
+          "condition": {
+            "source_duration_s": 31.632,
+            "window_start_s": 4.5,
+            "window_length_s": 25,
+            "filters": "highpass=f=80,loudnorm=I=-14:TP=-1.0:LRA=11,afade=t=in:st=0:d=0.05,afade=t=out:st=24.400:d=0.600",
+            "mean_volume_db": -21.1,
+            "max_volume_db": -5.3
+          },
+          "encode": {
+            "file": "cry_newborn_girl.caf",
+            "container": "caf",
+            "codec": "adpcm_ima_qt",
+            "sample_rate": 44100,
+            "channels": 1,
+            "duration_s": 25.001,
+            "sha256": "88bbdb8b65fabb08ee128cb952fa59fbf499adc752c2660667e902506d2eb152",
+            "bytes": 585848
+          }
+        }
+      }
+    },
+    {
+      "id": "two_month_loud",
+      "name": "Two-Month-Old",
+      "subtitle": "Loud, close-up binaural recording",
+      "file": "cry_two_month_loud.caf",
+      "author": "eguaus",
+      "source_title": "baby crying",
+      "source_page": "https://freesound.org/people/eguaus/sounds/321712/",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "provenance": {
+        "retrieved_at": "2026-11-25T18:35:12+00:00",
+        "origin": "recorded",
+        "stages": {
+          "fetch": {
+            "audio_url": "https://cdn.freesound.org/previews/321/321712_40875-hq.mp3",
+            "source_sha1": null,
+            "raw_sha256": "23b3a6ff0768c1c379988a4c156ebfc7f40808de6bd517136cd181311121f388",
+            "raw_bytes": 1239443
+          },
+          "condition": {
+            "source_duration_s": 53.211,
+            "window_start_s": 18.75,
+            "window_length_s": 25,
+            "filters": "highpass=f=80,loudnorm=I=-14:TP=-1.0:LRA=11,afade=t=in:st=0:d=0.05,afade=t=out:st=24.400:d=0.600",
+            "mean_volume_db": -20.7,
+            "max_volume_db": -2.8
+          },
+          "encode": {
+            "file": "cry_two_month_loud.caf",
+            "container": "caf",
+            "codec": "adpcm_ima_qt",
+            "sample_rate": 44100,
+            "channels": 1,
+            "duration_s": 25.001,
+            "sha256": "58eb98f0618b97002c2ef39cbf35527a0054c7480b85d42068c090f091be921d",
+            "bytes": 585848
+          }
+        }
+      }
+    },
+    {
+      "id": "big_fuss",
+      "name": "Big Fuss",
+      "subtitle": "Baby working up a big fuss",
+      "file": "cry_big_fuss.caf",
+      "author": "PickleJones",
+      "source_title": "01 baby crying hard.wav",
+      "source_page": "https://freesound.org/people/PickleJones/sounds/151085/",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "provenance": {
+        "retrieved_at": "2026-11-25T18:35:17+00:00",
+        "origin": "recorded",
+        "stages": {
+          "fetch": {
+            "audio_url": "https://cdn.freesound.org/previews/151/151085_2661659-hq.mp3",
+            "source_sha1": null,
+            "raw_sha256": "8178e6387cc9cfd8ebce485540f310670aec4b6b418a1d98f31ff11713bf40ad",
+            "raw_bytes": 256368
+          },
+          "condition": {
+            "source_duration_s": 10.872,
+            "window_start_s": 0.0,
+            "window_length_s": 10.872,
+            "filters": "highpass=f=80,loudnorm=I=-14:TP=-1.0:LRA=11,afade=t=in:st=0:d=0.05,afade=t=out:st=10.272:d=0.600",
+            "mean_volume_db": -18.7,
+            "max_volume_db": -1.1
+          },
+          "encode": {
+            "file": "cry_big_fuss.caf",
+            "container": "caf",
+            "codec": "adpcm_ima_qt",
+            "sample_rate": 44100,
+            "channels": 1,
+            "duration_s": 10.838,
+            "sha256": "1376023ae402bc3ea5e48d048179a618adf134cd19e77d36d8c31132568e2e77",
+            "bytes": 254042
+          }
+        }
+      }
+    },
+    {
+      "id": "whiny_boy",
+      "name": "Whiny Baby Boy",
+      "subtitle": "Starts whining, ends in tears",
+      "file": "cry_whiny_boy.caf",
+      "author": "jamesmbock",
+      "source_title": "babycry.mp3",
+      "source_page": "https://freesound.org/people/jamesmbock/sounds/458646/",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "provenance": {
+        "retrieved_at": "2026-11-25T18:35:23+00:00",
+        "origin": "recorded",
+        "stages": {
+          "fetch": {
+            "audio_url": "https://cdn.freesound.org/previews/458/458646_6996390-hq.mp3",
+            "source_sha1": null,
+            "raw_sha256": "c6a241782aba0f198bd1216a50f0535f7c9a3a473d39fae0bd9c05c692a8d668",
+            "raw_bytes": 335988
+          },
+          "condition": {
+            "source_duration_s": 24.948,
+            "window_start_s": 0.0,
+            "window_length_s": 24.948,
+            "filters": "highpass=f=80,loudnorm=I=-14:TP=-1.0:LRA=11,afade=t=in:st=0:d=0.05,afade=t=out:st=24.348:d=0.600",
+            "mean_volume_db": -19.9,
+            "max_volume_db": -1.0
+          },
+          "encode": {
+            "file": "cry_whiny_boy.caf",
+            "container": "caf",
+            "codec": "adpcm_ima_qt",
+            "sample_rate": 44100,
+            "channels": 1,
+            "duration_s": 24.844,
+            "sha256": "d4cdcf8d4b5cc448c4321705306277d4234aa71636a9ee032cbbb0554eb1e4e3",
+            "bytes": 582176
+          }
+        }
+      }
+    }
+  ]
+}

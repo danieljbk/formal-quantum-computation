@@ -1,0 +1,60 @@
+name: CryWake
+options:
+  bundleIdPrefix: com.crywake
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  CryWake:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Cry Wake
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UIBackgroundModes:
+          - audio
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIRequiresFullScreen: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.crywake.app
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO
+  CryWakeTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: CryWake
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.crywake.app.tests
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  CryWake:
+    build:
+      targets:
+        CryWake: all
+        CryWakeTests: [test]
+    test:
+      targets:
+        - CryWakeTests
+      gatherCoverageData: false
+    run:
+      config: Debug
