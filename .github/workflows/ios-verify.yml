@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'claude/klean-*'
+      - '!claude/klean-web-*'
   workflow_dispatch:
     inputs:
       target_ref:

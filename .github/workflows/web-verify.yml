@@ -1,0 +1,137 @@
+name: Web iOS Verify (klean)
+
+on:
+  push:
+    branches:
+      - 'claude/klean-web-*'
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: 'Branch or SHA to build, test, and package'
+        required: false
+        type: string
+
+jobs:
+  web-build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.target_ref || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Locate Web-iOS app manifest (ignoring exemplar QuantumComputation)
+        id: find_app
+        run: |
+          set -euo pipefail
+          PKG_JSON=$(find . -maxdepth 3 \( -path './QuantumComputation*' -o -path './.git*' -o -path './.github*' -o -path '*/node_modules*' \) -prune -o -name 'package.json' -print | head -n 1 || true)
+          echo "pkg_json=$PKG_JSON" >> "$GITHUB_OUTPUT"
+          echo "FOUND: pkg_json=$PKG_JSON"
+
+      - name: Build and Test Web-iOS App
+        run: |
+          set -euo pipefail
+          PKG_JSON="${{ steps.find_app.outputs.pkg_json }}"
+          if [ -z "$PKG_JSON" ]; then
+            echo "IOS_MANIFEST_OK=false"
+            echo "IOS_BUILD_OK=false"
+            echo "IOS_TEST_OK=false"
+            echo "WEB_PLAYABLE_OK=false"
+            echo "ERROR: No package.json found outside exemplar repo."
+            exit 1
+          fi
+
+          echo "IOS_MANIFEST_OK=true"
+          node --version || true
+          APP_DIR=$(dirname "$PKG_JSON")
+          cd "$APP_DIR"
+          if [ -f "package-lock.json" ]; then
+            npm ci || npm install
+          else
+            npm install
+          fi
+          if [ -f "tsconfig.json" ]; then
+            npx tsc --noEmit
+          fi
+          npm run build
+          if [ -f "dist/index.html" ] || [ -f "build/index.html" ]; then
+            echo "IOS_BUILD_OK=true"
+            echo "WEB_PLAYABLE_OK=true"
+          else
+            echo "IOS_BUILD_OK=false"
+            echo "WEB_PLAYABLE_OK=false"
+            exit 1
+          fi
+          CI=true npm test -- --run 2>/dev/null || CI=true npm test
+          echo "IOS_TEST_OK=true"
+
+      - name: Package Web-iOS Playable Bundle and Audio Preview
+        if: always()
+        run: |
+          set +e
+          mkdir -p "$GITHUB_WORKSPACE/_preview_media/audio" "$GITHUB_WORKSPACE/_preview_web"
+          APP_NAME=""
+          HAS_WEB_APP=false
+          PKG_JSON="${{ steps.find_app.outputs.pkg_json }}"
+          if [ -n "$PKG_JSON" ]; then
+            WEB_APP_DIR=$(dirname "$PKG_JSON")
+            for CAND in "$WEB_APP_DIR/dist" "$WEB_APP_DIR/build"; do
+              if [ -f "$CAND/index.html" ]; then
+                cp -R "$CAND"/. "$GITHUB_WORKSPACE/_preview_web/"
+                HAS_WEB_APP=true
+                APP_NAME=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("name",""))' "$PKG_JSON" 2>/dev/null || basename "$WEB_APP_DIR")
+                break
+              fi
+            done
+          fi
+
+          while IFS= read -r AF; do
+            [ -z "$AF" ] && continue
+            BASE=$(basename "$AF")
+            cp "$AF" "$GITHUB_WORKSPACE/_preview_media/audio/$BASE"
+          done < <(find "$GITHUB_WORKSPACE" -maxdepth 6 \( -path "$GITHUB_WORKSPACE/QuantumComputation*" -o -path "$GITHUB_WORKSPACE/.git*" -o -path "$GITHUB_WORKSPACE/.github*" -o -path '*/node_modules*' -o -path "$GITHUB_WORKSPACE/_preview_*" \) -prune -o -type f \( -iname '*.mp3' -o -iname '*.m4a' -o -iname '*.wav' -o -iname '*.ogg' \) -print)
+
+          TARGET_BRANCH="${{ github.event.inputs.target_ref || github.ref_name }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          python3 - "$GITHUB_WORKSPACE" "$TARGET_BRANCH" "${{ github.sha }}" "$APP_NAME" "${{ github.run_id }}" "$RUN_URL" "$HAS_WEB_APP" <<'PY'
+          import json, os, sys
+          ws, br, sha, name, rid, rurl, hw = sys.argv[1:8]
+          aud_dir = os.path.join(ws, "_preview_media", "audio")
+          audio_files = sorted(f for f in os.listdir(aud_dir) if not f.startswith(".")) if os.path.isdir(aud_dir) else []
+          meta = {
+              "branch": br,
+              "sha": sha,
+              "app_name": name,
+              "bundle_id": "",
+              "run_id": rid,
+              "run_url": rurl,
+              "has_app": False,
+              "has_screenshot": False,
+              "has_web_app": (hw == "true"),
+              "audio_files": audio_files,
+          }
+          with open(os.path.join(ws, "_preview_media", "manifest.json"), "w") as f:
+              json.dump(meta, f, indent=2)
+          print(json.dumps(meta, indent=2))
+          PY
+
+      - name: Upload Preview Media (Playable Audio + Manifest)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-preview-media
+          path: _preview_media/
+          retention-days: 14
+
+      - name: Upload Browser-Playable Web App Bundle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-playable-app
+          path: _preview_web/
+          retention-days: 14
