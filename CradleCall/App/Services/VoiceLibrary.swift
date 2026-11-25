@@ -43,7 +43,8 @@ enum VoiceLibrary {
 
     static func newRecordingURL() throws -> URL {
         try FileManager.default.createDirectory(at: soundsDirectory, withIntermediateDirectories: true)
-        return soundsDirectory.appendingPathComponent("custom_\(UUID().uuidString).caf")
+        return soundsDirectory.appendingPathComponent("custom_\(UUID().uuidString)")
+            .appendingPathExtension("caf")
     }
 
     static func delete(_ voice: BabyVoice) {

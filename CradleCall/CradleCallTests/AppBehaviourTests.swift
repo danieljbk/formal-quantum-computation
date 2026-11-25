@@ -28,7 +28,7 @@ final class AppBehaviourTests: XCTestCase {
         for entry in entries ?? [] {
             let clips = entry["sourceClips"] as? [String] ?? []
             XCTAssertFalse(clips.isEmpty)
-            XCTAssertTrue(clips.allSatisfy { $0.hasSuffix(".caf") })
+            XCTAssertTrue(clips.allSatisfy { ($0 as NSString).pathExtension == "caf" })
         }
     }
 
@@ -41,7 +41,7 @@ final class AppBehaviourTests: XCTestCase {
     func testUnknownVoiceFallsBackToBundledCry() {
         XCTAssertEqual(VoiceLibrary.soundFileName(for: "nope", custom: []), BabyVoice.bundled[0].fileName)
         let missing = BabyVoice(id: "custom-x", name: "Gone", detail: "", origin: .recorded,
-                                fileName: "does_not_exist.caf")
+                                fileName: "deleted-recording-\(UUID().uuidString)")
         XCTAssertEqual(VoiceLibrary.soundFileName(for: "custom-x", custom: [missing]),
                        BabyVoice.bundled[0].fileName)
     }

@@ -2,7 +2,7 @@
 
 ## Baby cry recordings
 
-All seven bundled alarm voices (`App/Resources/Sounds/cry_*.caf`) are real recordings
+All seven bundled alarm voices (the CAF files in `App/Resources/Sounds/`) are real recordings
 of crying infants from the **Donate-a-cry corpus**
 (<https://github.com/gveres/donateacry-corpus>), recorded by parents with the
 Donate-a-cry iOS app.
