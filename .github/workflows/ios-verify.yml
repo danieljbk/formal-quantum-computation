@@ -1,0 +1,122 @@
+name: iOS Verify (klean)
+
+on:
+  push:
+    branches:
+      - 'claude/klean-*'
+  workflow_dispatch:
+
+jobs:
+  ios-build-and-test:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Locate iOS / Swift app manifest (ignoring exemplar QuantumComputation)
+        id: find_app
+        run: |
+          set -euo pipefail
+          PROJ_YML=$(find . -maxdepth 3 \( -path './QuantumComputation*' -o -path './.git*' -o -path './.github*' \) -prune -o -name 'project.yml' -print | head -n 1 || true)
+          XCPROJ=$(find . -maxdepth 3 \( -path './QuantumComputation*' -o -path './.git*' -o -path './.github*' \) -prune -o -name '*.xcodeproj' -print | head -n 1 || true)
+          PKG_SWIFT=$(find . -maxdepth 3 \( -path './QuantumComputation*' -o -path './.git*' -o -path './.github*' \) -prune -o -name 'Package.swift' -print | head -n 1 || true)
+          echo "proj_yml=$PROJ_YML" >> "$GITHUB_OUTPUT"
+          echo "xcproj=$XCPROJ" >> "$GITHUB_OUTPUT"
+          echo "pkg_swift=$PKG_SWIFT" >> "$GITHUB_OUTPUT"
+          echo "FOUND: proj_yml=$PROJ_YML xcproj=$XCPROJ pkg_swift=$PKG_SWIFT"
+
+      - name: Build and Test iOS App
+        run: |
+          set -euo pipefail
+          PROJ_YML="${{ steps.find_app.outputs.proj_yml }}"
+          XCPROJ="${{ steps.find_app.outputs.xcproj }}"
+          PKG_SWIFT="${{ steps.find_app.outputs.pkg_swift }}"
+
+          if [ -z "$PROJ_YML" ] && [ -z "$XCPROJ" ] && [ -z "$PKG_SWIFT" ]; then
+            echo "IOS_MANIFEST_OK=false"
+            echo "IOS_BUILD_OK=false"
+            echo "IOS_TEST_OK=false"
+            echo "ERROR: No project.yml, *.xcodeproj, or Package.swift found outside exemplar repo."
+            exit 1
+          fi
+
+          echo "IOS_MANIFEST_OK=true"
+          xcodebuild -version || true
+          swift --version || true
+
+          if [ -n "$PROJ_YML" ]; then
+            APP_DIR=$(dirname "$PROJ_YML")
+            cd "$APP_DIR"
+            if ! command -v xcodegen >/dev/null 2>&1; then
+              brew install xcodegen
+            fi
+            xcodegen generate
+            XCPROJ_LOCAL=$(find . -maxdepth 2 -name '*.xcodeproj' | head -n 1)
+            echo "Generated Xcode project: $XCPROJ_LOCAL"
+            SCHEME=$(python3 -c '
+          import json, subprocess, sys
+          raw = subprocess.check_output(["xcodebuild", "-list", "-json", "-project", sys.argv[1]], text=True)
+          d = json.loads(raw)
+          schemes = d.get("project", {}).get("schemes", [])
+          print(schemes[0] if schemes else "")
+          ' "$XCPROJ_LOCAL")
+            echo "Using scheme: $SCHEME"
+            xcodebuild -project "$XCPROJ_LOCAL" -scheme "$SCHEME" -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+            echo "IOS_BUILD_OK=true"
+            HAS_TEST=$(python3 -c '
+          import json, subprocess, sys
+          raw = subprocess.check_output(["xcodebuild", "-list", "-json", "-project", sys.argv[1]], text=True)
+          d = json.loads(raw)
+          targets = d.get("project", {}).get("targets", [])
+          print("yes" if any("Test" in t for t in targets) else "no")
+          ' "$XCPROJ_LOCAL")
+            if [ "$HAS_TEST" = "yes" ]; then
+              SIM_ID=$(xcrun simctl list devices available | grep -E "iPhone " | head -n 1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/' || true)
+              if [ -n "$SIM_ID" ]; then
+                xcodebuild -project "$XCPROJ_LOCAL" -scheme "$SCHEME" -destination "platform=iOS Simulator,id=$SIM_ID" CODE_SIGNING_ALLOWED=NO test
+                echo "IOS_TEST_OK=true"
+              else
+                xcodebuild -project "$XCPROJ_LOCAL" -scheme "$SCHEME" -destination 'platform=iOS Simulator,name=iPhone 16' CODE_SIGNING_ALLOWED=NO test
+                echo "IOS_TEST_OK=true"
+              fi
+            else
+              echo "IOS_TEST_OK=false"
+              echo "ERROR: No test target found in project."
+              exit 1
+            fi
+          elif [ -n "$XCPROJ" ]; then
+            APP_DIR=$(dirname "$XCPROJ")
+            PROJ_NAME=$(basename "$XCPROJ")
+            cd "$APP_DIR"
+            SCHEME=$(python3 -c '
+          import json, subprocess, sys
+          raw = subprocess.check_output(["xcodebuild", "-list", "-json", "-project", sys.argv[1]], text=True)
+          d = json.loads(raw)
+          schemes = d.get("project", {}).get("schemes", [])
+          print(schemes[0] if schemes else "")
+          ' "$PROJ_NAME")
+            xcodebuild -project "$PROJ_NAME" -scheme "$SCHEME" -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+            echo "IOS_BUILD_OK=true"
+            HAS_TEST=$(python3 -c '
+          import json, subprocess, sys
+          raw = subprocess.check_output(["xcodebuild", "-list", "-json", "-project", sys.argv[1]], text=True)
+          d = json.loads(raw)
+          targets = d.get("project", {}).get("targets", [])
+          print("yes" if any("Test" in t for t in targets) else "no")
+          ' "$PROJ_NAME")
+            if [ "$HAS_TEST" = "yes" ]; then
+              SIM_ID=$(xcrun simctl list devices available | grep -E "iPhone " | head -n 1 | sed -E 's/.*\(([A-F0-9-]+)\).*/\1/' || true)
+              xcodebuild -project "$PROJ_NAME" -scheme "$SCHEME" -destination "platform=iOS Simulator,id=$SIM_ID" CODE_SIGNING_ALLOWED=NO test
+              echo "IOS_TEST_OK=true"
+            else
+              echo "IOS_TEST_OK=false"
+              exit 1
+            fi
+          elif [ -n "$PKG_SWIFT" ]; then
+            APP_DIR=$(dirname "$PKG_SWIFT")
+            cd "$APP_DIR"
+            swift build
+            echo "IOS_BUILD_OK=true"
+            swift test
+            echo "IOS_TEST_OK=true"
+          fi
